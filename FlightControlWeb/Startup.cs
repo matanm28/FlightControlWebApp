@@ -11,36 +11,52 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace FlightControlWeb {
-    public class Startup {
-        public Startup(IConfiguration configuration) {
-            Configuration = configuration;
+namespace FlightControlWeb
+{
+        using DataAccessLibrary.Converters;
+        using DataAccessLibrary.Data;
+        using Microsoft.AspNetCore.Mvc.Formatters;
+        using Microsoft.EntityFrameworkCore;
+        using Newtonsoft.Json;
+        using Newtonsoft.Json.Serialization;
+
+        public class Startup
+        {
+                public Startup(IConfiguration configuration)
+                {
+                        Configuration = configuration;
+                }
+
+                public IConfiguration Configuration { get; }
+
+                // This method gets called by the runtime. Use this method to add services to the container.
+                public void ConfigureServices(IServiceCollection services)
+                {
+                        services.AddDbContext<FlightControlContext>(options =>
+                        {
+                                options.UseSqlite(Configuration.GetConnectionString("FlightControlDB"));
+                        });
+                        
+                        services.AddControllers();
+                }
+
+                // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+                public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+                {
+                        if (env.IsDevelopment()) {
+                                app.UseDeveloperExceptionPage();
+                        }
+
+                        app.UseStaticFiles();
+
+                        app.UseHttpsRedirection();
+
+                        app.UseRouting();
+
+                        app.UseAuthorization();
+
+                        app.UseEndpoints(endpoints => endpoints.MapControllers());
+                        
+                }
         }
-
-        public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services) {
-            services.AddControllers();
-        }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
-            if (env.IsDevelopment()) {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.UseStaticFiles();
-
-            app.UseHttpsRedirection();
-
-            app.UseRouting();
-
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints => {
-                endpoints.MapControllers();
-            });
-        }
-    }
 }
