@@ -20,8 +20,10 @@ namespace DataAccessLibrary.Models
                 public string CompanyName { get; set; }
 
                 [Required]
+                [Range(-180.000001, 180)]
                 public double Longitude { get; set; }
                 [Required]
+                [Range(-90.000001, 90)]
                 public double Latitude { get; set; }
                 [Required]
                 [JsonPropertyName("date_time")]

@@ -9,14 +9,30 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLibrary.Migrations
 {
     [DbContext(typeof(FlightControlContext))]
-    [Migration("20200515222525_initialDBCreation")]
-    partial class initialDBCreation
+    [Migration("20200516203509_addedApiServers")]
+    partial class addedApiServers
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "3.1.4");
+
+            modelBuilder.Entity("DataAccessLibrary.Models.ApiServer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("URL")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasMaxLength(1024);
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ApiServer");
+                });
 
             modelBuilder.Entity("DataAccessLibrary.Models.Flight", b =>
                 {

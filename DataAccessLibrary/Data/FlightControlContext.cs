@@ -12,7 +12,7 @@ namespace DataAccessLibrary.Data {
         public DbSet<Flight> Flights { get; set; }
         public DbSet<Location> Locations { get; set; }
         public DbSet<Segments> Segmentses { get; set; }
-        public ApiServer ApiServer { get; set; }
+        public DbSet<ApiServer> ApiServer { get; set; }
 
         /// <inheritdoc />
         public FlightControlContext(DbContextOptions options)

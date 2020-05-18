@@ -23,5 +23,6 @@ namespace DataAccessLibrary.Models
                 [JsonPropertyName("initial_location")]
                 public Location InitialLocation { get; set; }
                 public virtual ICollection<Segments> Segments { get; set; }
+
         }
 }

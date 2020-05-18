@@ -11,6 +11,7 @@ namespace FlightControlWeb
 {
         using DataAccessLibrary.Data;
         using DataAccessLibrary.Models;
+        using Microsoft.EntityFrameworkCore;
         using Microsoft.Extensions.DependencyInjection;
 
         public class Program
@@ -38,6 +39,7 @@ namespace FlightControlWeb
                                 try {
                                         var context = services.GetRequiredService<FlightControlContext>();
                                         context.Database.EnsureCreated();
+                                        context.Database.Migrate();
                                 }
                                 catch (Exception ex) {
                                         var logger = services.GetRequiredService<ILogger<Program>>();
