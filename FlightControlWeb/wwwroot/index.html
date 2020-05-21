@@ -2,10 +2,152 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title></title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.0.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // Delete row on delete button click
+            $(document).on("click",
+                ".delete",
+                function () {
+                    $(this).parents("tr").remove();
+                    $(".add-new").removeAttr("disabled");
+                });
+        });
+    </script>
+    <style>
+        div.twoTables {
+            width: 95px;
+            height: 450px;
+            overflow: auto;
+        }
+        body {
+            background-image: url('flight.jpg');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+        }
+
+        .fa-trash:hover {
+            color: red;
+        }
+    </style>
 </head>
 <body>
-    <h1>Sapur and Matone web page</h1>
+    <div class="test col-12" style="color: whitesmoke; font-family: unset">
+        <h1 style="font-size: 52px">Flights Control </h1>
+    </div>
+    <div class="test col-12" style="color: whitesmoke; font-family: initial">
+        <h2 style="font-size: 15px">Matan Malka & Sapir Graffi </h2>
+    </div>
+    <div class="row">
+        <div id="map" class="col-7">
+            <script>
+                //crate map 51.505, -0.09
+                var map = L.map('map').setView([0,0], 2);
+                L.tileLayer('https://api.maptiler.com/maps/basic-4326/256/{z}/{x}/{y}.png?key=kUaqUXbYZJZLOhn9aaIH',
+                    {
+                        attribution:
+                            '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
+                    }).addTo(map);
+                //create plains
+                var plainIcon = L.icon({
+                    iconUrl: 'custom-plane-icon.png',
+                    iconSize: [95, 40],
+                    iconAnchor: [51.5, -0.11]
+                })
+                var marker = L.marker([51.5, -0.11], { icon: plainIcon }).addTo(map);
+                marker.bindPopup("<b>Flight Details<br>flight id:<br>longitude:<br>latitude:<br>passengers:<br>company name:<br>date time:<br>is external:</b>");
+            </script>
+        </div>
+        <div class="twoTables col-md-5">
+            <table class="twoRows">
+                <tr>
+                    <h2>My Flights</h2>
+                    <table class="table table-bordered table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th>Fight id</th>
+                            <th>Company Name</th>
+                            <th>Delete</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>John Doe</td>
+                            <td>Administration</td>
+                            <td>
+                                <a class="delete" title="Delete" data-toggle="tooltip" style="color: black">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Peter Parker</td>
+                            <td>Customer Service</td>
+                            <td>
+                                <a class="delete" title="Delete" data-toggle="tooltip" style="color: black">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Fran Wilson</td>
+                            <td>Human Resources</td>
+                            <td>
+                                <a class="delete" title="Delete" data-toggle="tooltip" style="color: black">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </tr>
+                <tr>
+                    <h2>External Flights</h2>
+                    <table class="table table-bordered table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th>Flight id</th>
+                            <th>Company Name</th>
+                            <th>Company Name</th>
+                            <th>Company Name</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>John Doe</td>
+                            <td>Administration</td>
+                            <td>Administration</td>
+                            <td>Administration</td>
+                        </tr>
+                        <tr>
+                            <td>Peter Parker</td>
+                            <td>Customer Service</td>
+                            <td>Customer Service</td>
+                            <td>Customer Service</td>
+                        </tr>
+                        <tr>
+                            <td>Fran Wilson</td>
+                            <td>Human Resources</td>
+                            <td>Human Resources</td>
+                            <td>Human Resources</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </tr>
+            </table>
+            
+        </div>
+    </div>
 
 </body>
-</html>
+</html >
