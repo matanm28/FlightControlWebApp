@@ -19,7 +19,7 @@ namespace FlightControlWeb.Controllers {
     [ApiController]
     public class FlightPlansController : ControllerBase {
         private readonly FlightControlContext _context;
-        private const ulong ModNumber = 100000;
+        private const int ModNumber = 100000;
 
         public FlightPlansController(FlightControlContext context) {
             _context = context;
@@ -34,13 +34,15 @@ namespace FlightControlWeb.Controllers {
         // GET: api/FlightPlans/5
         [HttpGet("{id}")]
         public async Task<ActionResult<FlightPlan>> GetFlightPlan(int id) {
-            var flightPlan = await _context.FlightPlans.FindAsync(id);
-
+            var flightPlan = await _context.FlightPlans
+                                     .Include(flightPlan => flightPlan.Segments)
+                                     .Include(flightPlan => flightPlan.InitialLocation)
+                                     .FirstAsync(flightPlan => flightPlan.Id == id);
             if (flightPlan == null) {
                 return NotFound();
             }
 
-            return flightPlan;
+            return Ok(flightPlan);
         }
 
         // PUT: api/FlightPlans/5
@@ -73,22 +75,21 @@ namespace FlightControlWeb.Controllers {
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
         public async Task<ActionResult<FlightPlan>> PostFlightPlan(FlightPlan flightPlan) {
-            _context.FlightPlans.Add(flightPlan);
             Flight flight = new Flight()
-                                    {
-                                            FlightId = this.calcFlightId(flightPlan),
-                                            Longitude = flightPlan.InitialLocation.Longitude,
-                                            Latitude = flightPlan.InitialLocation.Latitude,
-                                            Passengers = flightPlan.Passengers,
-                                            CompanyName = flightPlan.CompanyName,
-                                            DateTime = flightPlan.InitialLocation.DateTime,
-                                    };
+                                {
+                                    FlightId = GenerateFlightId(flightPlan),
+                                    Longitude = flightPlan.InitialLocation.Longitude,
+                                    Latitude = flightPlan.InitialLocation.Latitude,
+                                    Passengers = flightPlan.Passengers,
+                                    CompanyName = flightPlan.CompanyName,
+                                    DateTime = flightPlan.InitialLocation.DateTime,
+                                };
             var sendRequest = await this.postFlight(flight);
             if (!sendRequest.IsSuccessStatusCode) {
                 Debug.WriteLine(sendRequest);
                 return BadRequest(flight);
             }
-
+            _context.FlightPlans.Add(flightPlan);
             await _context.SaveChangesAsync();
 
             var response = CreatedAtAction("GetFlightPlan", new { id = flightPlan.Id }, flightPlan);
@@ -97,13 +98,13 @@ namespace FlightControlWeb.Controllers {
 
         [HttpPost("List")]
         public async Task<ActionResult<IEnumerable<FlightPlan>>> PostFlightPlansList(IEnumerable<FlightPlan> flightPlans) {
-            
             foreach (FlightPlan flightPlan in flightPlans) {
                 var actionResult = await PostFlightPlan(flightPlan);
                 if (!(actionResult.Result is CreatedAtActionResult)) {
                     return BadRequest(flightPlan);
                 }
             }
+
             return Created(nameof(GetFlightPlans), flightPlans);
         }
 
@@ -118,7 +119,7 @@ namespace FlightControlWeb.Controllers {
             _context.FlightPlans.Remove(flightPlan);
             await _context.SaveChangesAsync();
 
-            return flightPlan;
+            return Ok(flightPlan);
         }
 
         private bool FlightPlanExists(int id) {
@@ -131,7 +132,7 @@ namespace FlightControlWeb.Controllers {
                 var hashedValue = hashSha256.ComputeHash(Encoding.UTF8.GetBytes(flightPlan.CompanyName + flightPlan.Passengers
                                                                                                        + flightPlan.InitialLocation.DateTime
                                                                                                        + RandomNumberGenerator.GetInt32(int.MaxValue)));
-                ulong mod = ModNumber;
+                int mod = ModNumber;
                 int length = flightPlan.CompanyName.Length;
                 if (length < 5) {
                     for (int i = 0; i < 5 - length; i++) {
@@ -143,7 +144,8 @@ namespace FlightControlWeb.Controllers {
                     sb.Append(flightPlan.CompanyName.Substring(0, 5));
                 }
 
-                var key = BitConverter.ToUInt64(hashedValue) % mod;
+                // var key = BitConverter.ToUInt64(hashedValue) % mod;
+                var key = Math.Abs(flightPlan.GetHashCode()) % mod;
                 sb.Append($"-{key}");
             }
 
@@ -163,6 +165,24 @@ namespace FlightControlWeb.Controllers {
 
                 return result;
             }
+        }
+
+        internal static string GenerateFlightId(FlightPlan flightPlan) {
+            StringBuilder sb = new StringBuilder();
+            int mod = ModNumber;
+            int length = flightPlan.CompanyName.Length;
+            if (length < 5) {
+                for (int i = 0; i < 5 - length; i++) {
+                    mod *= 10;
+                }
+                sb.Append(flightPlan.CompanyName.Substring(0, length));
+            } else {
+                sb.Append(flightPlan.CompanyName.Substring(0, 5));
+            }
+
+            // var key = BitConverter.ToUInt64(hashedValue) % mod;
+            var key = Math.Abs(flightPlan.GetHashCode()) % mod;
+            return sb.Append($"-{key}").ToString().ToUpper();
         }
     }
 }

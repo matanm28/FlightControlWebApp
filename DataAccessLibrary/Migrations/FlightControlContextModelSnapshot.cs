@@ -106,7 +106,7 @@ namespace DataAccessLibrary.Migrations
                     b.ToTable("Locations");
                 });
 
-            modelBuilder.Entity("DataAccessLibrary.Models.Segments", b =>
+            modelBuilder.Entity("DataAccessLibrary.Models.Segment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -140,7 +140,7 @@ namespace DataAccessLibrary.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("DataAccessLibrary.Models.Segments", b =>
+            modelBuilder.Entity("DataAccessLibrary.Models.Segment", b =>
                 {
                     b.HasOne("DataAccessLibrary.Models.FlightPlan", null)
                         .WithMany("Segments")

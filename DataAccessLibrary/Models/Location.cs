@@ -20,5 +20,6 @@
                 [Required]
                 [JsonPropertyName("date_time")]
                 public DateTime DateTime { get; set; }
+
         }
 }

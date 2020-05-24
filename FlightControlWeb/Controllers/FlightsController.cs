@@ -25,7 +25,7 @@ namespace FlightControlWeb.Controllers {
         }
 
         // GET: api/Flights
-        [HttpGet]
+        [HttpGet("List")]
         public async Task<ActionResult<IEnumerable<Flight>>> GetFlights() {
             return await _context.Flights.ToListAsync();
         }
@@ -104,8 +104,8 @@ namespace FlightControlWeb.Controllers {
 
         // GET: api/Flights?relative_to=<DateTime>&sync_all
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Flight>>> GetFlightsRelativeTo([FromRoute] DateTime relative_to, [FromRoute]bool sync_all = false) {
-            var flights = await this._context.Flights.Where(flight => flight.DateTime <= relative_to).ToListAsync();
+        public async Task<ActionResult<IEnumerable<Flight>>> GetFlightsRelativeTo([FromQuery] DateTime relative_to, [FromQuery] bool sync_all = false) {
+            var flights = await this._context.Flights.Where(flight => flight.DateTime >= relative_to).ToListAsync();
             if (sync_all) {
                 var servers = await this._context.ApiServer.ToListAsync();
                 List<Flight> externalFlights = new List<Flight>();
@@ -117,9 +117,11 @@ namespace FlightControlWeb.Controllers {
                         externalFlights.AddRange(tempFlights);
                     }
                 }
+
                 foreach (Flight externalFlight in externalFlights) {
                     externalFlight.IsExternal = true;
                 }
+
                 flights.AddRange(externalFlights);
             }
 
