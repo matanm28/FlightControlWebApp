@@ -29,7 +29,10 @@ namespace FlightControlWeb.Controllers {
         // GET: api/FlightPlans
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FlightPlan>>> GetFlightPlans() {
-            return await _context.FlightPlans.ToListAsync();
+            return await _context.FlightPlans
+                                 .Include(x => x.Segments)
+                                 .Include(x => x.InitialLocation)
+                                 .ToListAsync();
         }
 
         // GET: api/FlightPlans/5

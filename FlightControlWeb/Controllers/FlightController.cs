@@ -87,7 +87,12 @@ namespace FlightControlWeb.Controllers {
                 }
             }
 
-            return CreatedAtAction("GetFlight", new { id = flight.FlightId }, flight);
+            return CreatedAtAction("GetFlight",
+                    new
+                        {
+                            id = flight.FlightId
+                        },
+                    flight);
         }
 
         // DELETE: api/Flights/5
@@ -107,26 +112,43 @@ namespace FlightControlWeb.Controllers {
         // GET: api/Flights?relative_to=<DateTime>&sync_all
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Flight>>> GetFlightsRelativeTo([FromQuery] DateTime relative_to, [FromQuery] bool sync_all = false) {
-            var flights = await this._context.Flights.Where(flight => flight.DateTime >= relative_to).ToListAsync();
-            if (sync_all) {
-                var servers = await this._context.ApiServer.ToListAsync();
-                List<Flight> externalFlights = new List<Flight>();
-                foreach (Server server in servers) {
-                    using (HttpClient client = new HttpClient()) {
-                        var uri = new Uri($"{server.URL}/api/Flights?relative_to={relative_to}");
-                        var response = await client.GetAsync(uri);
-                        IEnumerable<Flight> tempFlights = JsonConvert.DeserializeObject<IEnumerable<Flight>>(await response.Content.ReadAsStringAsync());
-                        externalFlights.AddRange(tempFlights);
-                    }
-                }
-                foreach (Flight externalFlight in externalFlights) {
-                    externalFlight.IsExternal = true;
-                }
-
-                flights.AddRange(externalFlights);
+            var flightPlansList = await this._context.FlightPlans.Include(x => x.InitialLocation).Include(x => x.Segments)
+                                            .Where(flight => flight.InitialLocation.DateTime >= relative_to).ToListAsync();
+            IList<Task<Flight>> flightTasks = new List<Task<Flight>>();
+            foreach (FlightPlan flightPlan in flightPlansList) {
+                flightTasks.Add(flightPlan.GetFlightRelativeToTimeAsync(relative_to));
             }
 
-            return Ok(flights);
+            List<Flight> flightList = new List<Flight>(await Task.WhenAll(flightTasks));
+            if (sync_all) {
+                IList<Flight> externalFlights = await this.getFlightsFromExternalServersAsync(relative_to);
+                flightList.AddRange(externalFlights);
+            }
+
+            return Ok(flightPlansList);
+        }
+
+        private async Task<IList<Flight>> getFlightsFromExternalServersAsync(DateTime relative_to) {
+            var servers = await this._context.ApiServer.ToListAsync();
+            IList<Task<HttpResponseMessage>> tasksList = new List<Task<HttpResponseMessage>>();
+            HttpClient client = new HttpClient();
+            foreach (Server server in servers) {
+                var uri = new Uri($"{server.URL}/api/Flights?relative_to={relative_to}");
+                tasksList.Add(client.GetAsync(uri));
+            }
+
+            List<Flight> flightsList = new List<Flight>();
+            IList<HttpResponseMessage> responseList = await Task.WhenAll(tasksList);
+            foreach (HttpResponseMessage response in responseList) {
+                IEnumerable<Flight> tempFlights = JsonConvert.DeserializeObject<IEnumerable<Flight>>(await response.Content.ReadAsStringAsync());
+                if (tempFlights != null) {
+                    flightsList.AddRange(tempFlights);
+                }
+            }
+
+            flightsList.ForEach(flight => flight.IsExternal = true);
+
+            return flightsList;
         }
 
         private bool FlightExists(string id) {

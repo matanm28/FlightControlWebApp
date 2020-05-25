@@ -7,6 +7,7 @@ namespace DataAccessLibrary.Models {
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Linq;
     using System.Security.Cryptography;
+    using System.Threading.Tasks;
     using DataAccessLibrary.Converters;
     using MathNet.Numerics;
     using MathNet.Numerics.Interpolation;
@@ -43,7 +44,25 @@ namespace DataAccessLibrary.Models {
             return relativeTo >= InitialLocation.DateTime && relativeTo <= EndTime;
         }
 
-        public Location GetRelativeLocation(DateTime relativeTo) {
+        public async Task<Flight> GetFlightRelativeToTimeAsync(DateTime relativeTo) {
+            if (!this.IsOngoing(relativeTo)) {
+                return null;
+            }
+            Location location = await this.InterpolateLocationAsync(relativeTo);
+            Flight flight = new Flight()
+                                {
+                                    FlightId = this.Id,
+                                    CompanyName = this.CompanyName,
+                                    DateTime = location.DateTime,
+                                    Longitude = location.Longitude,
+                                    Latitude = location.Latitude,
+                                    Passengers = this.Passengers,
+                                };
+            return flight;
+        }
+
+
+        private Location GetRelativeLocation(DateTime relativeTo) {
             if (this.IsOngoing(relativeTo)) {
                 return this.InterpolateLocation(relativeTo);
             } else if (Segments.Count > 0) {
@@ -83,6 +102,32 @@ namespace DataAccessLibrary.Models {
                            Latitude = latitudesInterpolation.Interpolate(myTimeSpan.TotalSeconds),
                            DateTime = relativeTo
                        };
+        }
+
+        private Task<Location> InterpolateLocationAsync(DateTime relativeTo) {
+            IList<double> longitudes = new List<double>();
+            IList<double> latitudes = new List<double>();
+            IList<double> timeSpans = new List<double>();
+            TimeSpan currentTimeSpan = TimeSpan.Zero;
+            TimeSpan myTimeSpan = TimeSpan.Zero;
+            longitudes.Add(this.InitialLocation.Longitude);
+            latitudes.Add(InitialLocation.Latitude);
+            timeSpans.Add(currentTimeSpan.TotalSeconds);
+            foreach (Segment segment in Segments) {
+                longitudes.Add(segment.Longitude);
+                latitudes.Add(segment.Latitude);
+                currentTimeSpan += segment.TimeSpan;
+                timeSpans.Add(currentTimeSpan.TotalSeconds);
+            }
+
+            myTimeSpan = relativeTo - this.InitialLocation.DateTime;
+            IInterpolation longitudesInterpolation = Interpolate.Linear(timeSpans, longitudes);
+            IInterpolation latitudesInterpolation = Interpolate.Linear(timeSpans, latitudes);
+            return new Location {
+                                        Longitude = longitudesInterpolation.Interpolate(myTimeSpan.TotalSeconds),
+                                        Latitude = latitudesInterpolation.Interpolate(myTimeSpan.TotalSeconds),
+                                        DateTime = relativeTo
+                                    };
         }
 
         private Location InterpolateLocation2(DateTime relativeTo) {
