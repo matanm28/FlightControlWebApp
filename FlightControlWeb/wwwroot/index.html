@@ -21,7 +21,31 @@
                     $(this).parents("tr").remove();
                     $(".add-new").removeAttr("disabled");
                 });
+            getFlights();
         });
+
+        function getFlights(parameters) {
+            $.ajax({
+                type: "GET",
+                url: "api/Flights?relative_to=<DateTime>",
+                //real => url: "api/Flights?relative_to=<DateTime>&sync_all",
+                success: addToTable,
+                error: function () {
+                    alert("Failed getting flights");
+                }
+            });
+        }
+
+        function addToTable(flights) {
+            flights.forEach(function(flight) {
+                if (!flight.is_external) {
+                    $('#my_flights').append('<tr><td>' + flight.id + '</td><td>' + flight.company_name + '</td><td><a class="delete" title="Delete" data-toggle="tooltip" style="color: black"><i class="fas fa-trash"></i></a></td>');
+                } else {
+                    $('#external_flights').append('<tr><td>' + flight.id + '</td><td>' + flight.company_name);
+                }
+            });
+        }
+
     </script>
     <style>
         div.twoTables {
@@ -72,7 +96,7 @@
             <table class="twoRows">
                 <tr>
                     <h2>My Flights</h2>
-                    <table class="table table-bordered table-striped table-hover">
+                    <table class="table table-bordered table-striped table-hover" id="my_flights">
                         <thead>
                         <tr>
                             <th>Fight id</th>
@@ -113,12 +137,10 @@
                 </tr>
                 <tr>
                     <h2>External Flights</h2>
-                    <table class="table table-bordered table-striped table-hover">
+                    <table class="table table-bordered table-striped table-hover" id="external_flights">
                         <thead>
                         <tr>
                             <th>Flight id</th>
-                            <th>Company Name</th>
-                            <th>Company Name</th>
                             <th>Company Name</th>
                         </tr>
                         </thead>
@@ -126,19 +148,13 @@
                         <tr>
                             <td>John Doe</td>
                             <td>Administration</td>
-                            <td>Administration</td>
-                            <td>Administration</td>
                         </tr>
                         <tr>
                             <td>Peter Parker</td>
                             <td>Customer Service</td>
-                            <td>Customer Service</td>
-                            <td>Customer Service</td>
                         </tr>
                         <tr>
                             <td>Fran Wilson</td>
-                            <td>Human Resources</td>
-                            <td>Human Resources</td>
                             <td>Human Resources</td>
                         </tr>
                         </tbody>
