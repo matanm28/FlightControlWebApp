@@ -9,7 +9,9 @@ using Microsoft.Extensions.Logging;
 
 namespace FlightControlWeb
 {
+    using System.ComponentModel;
     using System.IO;
+    using DataAccessLibrary.Converters;
     using DataAccessLibrary.Data;
         using DataAccessLibrary.Models;
         using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -22,6 +24,7 @@ namespace FlightControlWeb
                 {
 
                         var host = CreateHostBuilder(args).Build();
+                        TypeDescriptor.AddAttributes(typeof(DateTime), new TypeConverterAttribute(typeof(UtcDateTimeConverter)));
                         CreateDbIfNotExists(host);
                         host.Run();
                 }
