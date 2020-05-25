@@ -68,7 +68,7 @@ namespace DataAccessLibrary.Migrations
                         name: "FK_FlightPlans_Locations_InitialLocationId",
                         column: x => x.InitialLocationId,
                         principalTable: "Locations",
-                        principalColumn: "Id",
+                        principalColumn: "FlightId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -90,7 +90,7 @@ namespace DataAccessLibrary.Migrations
                         name: "FK_Segmentses_FlightPlans_FlightPlanId",
                         column: x => x.FlightPlanId,
                         principalTable: "FlightPlans",
-                        principalColumn: "Id",
+                        principalColumn: "FlightId",
                         onDelete: ReferentialAction.Restrict);
                 });
 

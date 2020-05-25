@@ -123,11 +123,11 @@ namespace DataAccessLibrary.Models {
             myTimeSpan = relativeTo - this.InitialLocation.DateTime;
             IInterpolation longitudesInterpolation = Interpolate.Linear(timeSpans, longitudes);
             IInterpolation latitudesInterpolation = Interpolate.Linear(timeSpans, latitudes);
-            return new Location {
-                                        Longitude = longitudesInterpolation.Interpolate(myTimeSpan.TotalSeconds),
-                                        Latitude = latitudesInterpolation.Interpolate(myTimeSpan.TotalSeconds),
-                                        DateTime = relativeTo
-                                    };
+            return Task.FromResult(new Location {
+                                                        Longitude = longitudesInterpolation.Interpolate(myTimeSpan.TotalSeconds),
+                                                        Latitude = latitudesInterpolation.Interpolate(myTimeSpan.TotalSeconds),
+                                                        DateTime = relativeTo
+                                                    });
         }
 
         private Location InterpolateLocation2(DateTime relativeTo) {

@@ -102,8 +102,13 @@ namespace FlightControlWeb.Controllers {
             if (flight == null) {
                 return NotFound();
             }
-
+            var flightPlan = await this._context.FlightPlans.Include(x=>x.InitialLocation)
+                                       .Include(x=>x.Segments).FirstOrDefaultAsync();
+            if (flightPlan == null) {
+                return NotFound();
+            }
             _context.Flights.Remove(flight);
+            _context.FlightPlans.Remove(flightPlan);
             await _context.SaveChangesAsync();
 
             return flight;

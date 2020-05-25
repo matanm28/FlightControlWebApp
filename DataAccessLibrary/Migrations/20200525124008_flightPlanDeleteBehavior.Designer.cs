@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLibrary.Migrations
 {
     [DbContext(typeof(FlightControlContext))]
-    [Migration("20200524160524_DBCreation")]
-    partial class DBCreation
+    [Migration("20200525124008_flightPlanDeleteBehavior")]
+    partial class flightPlanDeleteBehavior
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -50,7 +50,7 @@ namespace DataAccessLibrary.Migrations
 
             modelBuilder.Entity("DataAccessLibrary.Models.FlightPlan", b =>
                 {
-                    b.Property<string>("FlightId")
+                    b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("CompanyName")
@@ -64,7 +64,7 @@ namespace DataAccessLibrary.Migrations
                     b.Property<int>("Passengers")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("FlightId");
+                    b.HasKey("Id");
 
                     b.HasIndex("InitialLocationId");
 
@@ -73,7 +73,7 @@ namespace DataAccessLibrary.Migrations
 
             modelBuilder.Entity("DataAccessLibrary.Models.Location", b =>
                 {
-                    b.Property<int>("FlightId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -86,14 +86,14 @@ namespace DataAccessLibrary.Migrations
                     b.Property<double>("Longitude")
                         .HasColumnType("REAL");
 
-                    b.HasKey("FlightId");
+                    b.HasKey("Id");
 
                     b.ToTable("Locations");
                 });
 
             modelBuilder.Entity("DataAccessLibrary.Models.Segment", b =>
                 {
-                    b.Property<int>("FlightId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -109,7 +109,7 @@ namespace DataAccessLibrary.Migrations
                     b.Property<int>("TimeSpanSeconds")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("FlightId");
+                    b.HasKey("Id");
 
                     b.HasIndex("FlightPlanId");
 
@@ -118,7 +118,7 @@ namespace DataAccessLibrary.Migrations
 
             modelBuilder.Entity("DataAccessLibrary.Models.Server", b =>
                 {
-                    b.Property<int>("FlightId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -127,7 +127,7 @@ namespace DataAccessLibrary.Migrations
                         .HasColumnType("TEXT")
                         .HasMaxLength(1024);
 
-                    b.HasKey("FlightId");
+                    b.HasKey("Id");
 
                     b.ToTable("ApiServer");
                 });
