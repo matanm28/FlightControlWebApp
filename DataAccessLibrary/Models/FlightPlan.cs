@@ -7,23 +7,22 @@ namespace DataAccessLibrary.Models {
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Linq;
     using System.Security.Cryptography;
-    using System.Text.Json.Serialization;
     using DataAccessLibrary.Converters;
     using MathNet.Numerics;
     using MathNet.Numerics.Interpolation;
+    using Newtonsoft.Json;
 
     public class FlightPlan {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public string Id { get; set; }
         [Required]
         public int Passengers { get; set; }
         [Required(ErrorMessage = "A Company Name is required")]
-        [JsonPropertyName("company_name")]
+        [JsonProperty("company_name")]
         [MaxLength(100)]
         public string CompanyName { get; set; }
         [Required(ErrorMessage = "A Location is required")]
-        [JsonPropertyName("initial_location")]
+        [JsonProperty("initial_location")]
         public virtual Location InitialLocation { get; set; }
         public virtual ICollection<Segment> Segments { get; set; }
 
@@ -50,7 +49,6 @@ namespace DataAccessLibrary.Models {
             } else if (Segments.Count > 0) {
                 return new Location
                            {
-                               Id = this.Id,
                                Latitude = this.Segments.Last().Longitude,
                                Longitude = this.Segments.Last().Longitude,
                                DateTime = this.EndTime
@@ -81,7 +79,6 @@ namespace DataAccessLibrary.Models {
             IInterpolation latitudesInterpolation = Interpolate.Linear(timeSpans, latitudes);
             return new Location
                        {
-                           Id = this.Id,
                            Longitude = longitudesInterpolation.Interpolate(myTimeSpan.TotalSeconds),
                            Latitude = latitudesInterpolation.Interpolate(myTimeSpan.TotalSeconds),
                            DateTime = relativeTo

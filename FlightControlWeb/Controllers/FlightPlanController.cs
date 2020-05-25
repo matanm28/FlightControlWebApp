@@ -13,15 +13,16 @@ namespace FlightControlWeb.Controllers {
     using System.Net.Http;
     using System.Security.Cryptography;
     using System.Text;
-    using System.Text.Json;
+    using Newtonsoft.Json;
 
     [Route("api/[controller]")]
     [ApiController]
-    public class FlightPlansController : ControllerBase {
-        private readonly FlightControlContext _context;
+    public class FlightPlanController : ControllerBase {
+        private static ISet<string> flightPlansId = new HashSet<string>();
         private const int ModNumber = 100000;
-
-        public FlightPlansController(FlightControlContext context) {
+        private readonly FlightControlContext _context;
+        
+        public FlightPlanController(FlightControlContext context) {
             _context = context;
         }
 
@@ -33,12 +34,31 @@ namespace FlightControlWeb.Controllers {
 
         // GET: api/FlightPlans/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<FlightPlan>> GetFlightPlan(int id) {
+        public async Task<ActionResult<FlightPlan>> GetFlightPlan(string id) {
+            if (flightPlansId.Contains(id)) {
+                return NotFound();
+            }
             var flightPlan = await _context.FlightPlans
                                      .Include(flightPlan => flightPlan.Segments)
                                      .Include(flightPlan => flightPlan.InitialLocation)
-                                     .FirstAsync(flightPlan => flightPlan.Id == id);
+                                     .FirstOrDefaultAsync(flightPlan => flightPlan.Id == id);
             if (flightPlan == null) {
+                flightPlansId.Add(id);
+                using (HttpClient client = new HttpClient()) {
+                    var result = await client.GetAsync("https://"+this.Request.Host.Value + "/api/servers");
+                    IEnumerable<Server> serversList = JsonConvert.DeserializeObject<IEnumerable<Server>>(await result.Content.ReadAsStringAsync());
+                    foreach (Server server in serversList) {
+                        var response = await client.GetAsync($"{server.URL}/api/FlightPlan/{id}");
+                        var arr = await response.Content.ReadAsStringAsync();
+                        flightPlan = JsonConvert.DeserializeObject<FlightPlan>(await response.Content.ReadAsStringAsync());
+                        if (flightPlan != null) {
+                            flightPlan.Id = id;
+                            flightPlansId.Remove(id);
+                            return Ok(flightPlan);
+                        }
+                    }
+                }
+                flightPlansId.Remove(id);
                 return NotFound();
             }
 
@@ -49,7 +69,7 @@ namespace FlightControlWeb.Controllers {
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutFlightPlan(int id, FlightPlan flightPlan) {
+        public async Task<IActionResult> PutFlightPlan(string id, FlightPlan flightPlan) {
             if (id != flightPlan.Id) {
                 return BadRequest();
             }
@@ -89,6 +109,8 @@ namespace FlightControlWeb.Controllers {
                 Debug.WriteLine(sendRequest);
                 return BadRequest(flight);
             }
+
+            flightPlan.Id = flight.FlightId;
             _context.FlightPlans.Add(flightPlan);
             await _context.SaveChangesAsync();
 
@@ -122,7 +144,7 @@ namespace FlightControlWeb.Controllers {
             return Ok(flightPlan);
         }
 
-        private bool FlightPlanExists(int id) {
+        private bool FlightPlanExists(string id) {
             return _context.FlightPlans.Any(e => e.Id == id);
         }
 
@@ -155,8 +177,8 @@ namespace FlightControlWeb.Controllers {
         private async Task<HttpResponseMessage> postFlight(Flight flight) {
             using (HttpClient client = new HttpClient()) {
                 var check = this.Request.Host.Value;
-                var uri = new Uri("https://" + this.Request.Host.Value + "/api/Flights");
-                string contents = JsonSerializer.Serialize(flight);
+                var uri = new Uri("https://"+this.Request.Host.Value + "/api/Flights");
+                string contents = JsonConvert.SerializeObject(flight);
                 var response = client.PostAsync(uri, new StringContent(contents, Encoding.UTF8, "application/json"));
                 var result = await response.ConfigureAwait(false);
                 if (!result.IsSuccessStatusCode) {

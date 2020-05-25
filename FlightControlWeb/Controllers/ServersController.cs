@@ -12,25 +12,25 @@ namespace FlightControlWeb.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ApiServersController : ControllerBase
+    public class ServersController : ControllerBase
     {
         private readonly FlightControlContext _context;
 
-        public ApiServersController(FlightControlContext context)
+        public ServersController(FlightControlContext context)
         {
             _context = context;
         }
 
         // GET: api/ApiServers
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ApiServer>>> GetApiServer()
+        public async Task<ActionResult<IEnumerable<Server>>> GetApiServer()
         {
             return await _context.ApiServer.ToListAsync();
         }
 
         // GET: api/ApiServers/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiServer>> GetApiServer(int id)
+        public async Task<ActionResult<Server>> GetApiServer(int id)
         {
             var apiServer = await _context.ApiServer.FindAsync(id);
 
@@ -46,17 +46,17 @@ namespace FlightControlWeb.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<ApiServer>> PostApiServer(ApiServer apiServer)
+        public async Task<ActionResult<Server>> PostApiServer(Server server)
         {
-            _context.ApiServer.Add(apiServer);
+            _context.ApiServer.Add(server);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetApiServer", new { id = apiServer.Id }, apiServer);
+            return CreatedAtAction("GetApiServer", new { id = server.Id }, server);
         }
 
         // DELETE: api/ApiServers/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiServer>> DeleteApiServer(int id)
+        public async Task<ActionResult<Server>> DeleteApiServer(int id)
         {
             var apiServer = await _context.ApiServer.FindAsync(id);
             if (apiServer == null)

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace DataAccessLibrary.Migrations
 {
-    public partial class initialDBCreation : Migration
+    public partial class DBCreation : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -56,8 +56,7 @@ namespace DataAccessLibrary.Migrations
                 name: "FlightPlans",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<string>(nullable: false),
                     Passengers = table.Column<int>(nullable: false),
                     CompanyName = table.Column<string>(maxLength: 100, nullable: false),
                     InitialLocationId = table.Column<int>(nullable: false)
@@ -82,7 +81,7 @@ namespace DataAccessLibrary.Migrations
                     Longitude = table.Column<double>(nullable: false),
                     Latitude = table.Column<double>(nullable: false),
                     TimeSpanSeconds = table.Column<int>(nullable: false),
-                    FlightPlanId = table.Column<int>(nullable: true)
+                    FlightPlanId = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {

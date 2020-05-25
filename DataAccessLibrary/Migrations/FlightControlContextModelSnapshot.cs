@@ -16,22 +16,6 @@ namespace DataAccessLibrary.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "3.1.4");
 
-            modelBuilder.Entity("DataAccessLibrary.Models.ApiServer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("URL")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasMaxLength(1024);
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ApiServer");
-                });
-
             modelBuilder.Entity("DataAccessLibrary.Models.Flight", b =>
                 {
                     b.Property<string>("FlightId")
@@ -64,9 +48,8 @@ namespace DataAccessLibrary.Migrations
 
             modelBuilder.Entity("DataAccessLibrary.Models.FlightPlan", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("CompanyName")
                         .IsRequired()
@@ -112,8 +95,8 @@ namespace DataAccessLibrary.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("FlightPlanId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("FlightPlanId")
+                        .HasColumnType("TEXT");
 
                     b.Property<double>("Latitude")
                         .HasColumnType("REAL");
@@ -129,6 +112,22 @@ namespace DataAccessLibrary.Migrations
                     b.HasIndex("FlightPlanId");
 
                     b.ToTable("Segmentses");
+                });
+
+            modelBuilder.Entity("DataAccessLibrary.Models.Server", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("URL")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasMaxLength(1024);
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ApiServer");
                 });
 
             modelBuilder.Entity("DataAccessLibrary.Models.FlightPlan", b =>

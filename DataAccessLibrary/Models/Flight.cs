@@ -6,8 +6,8 @@ namespace DataAccessLibrary.Models
 {
         using System.ComponentModel;
         using System.ComponentModel.DataAnnotations;
-        using System.Text.Json.Serialization;
         using DataAccessLibrary.Converters;
+        using Newtonsoft.Json;
 
         public class Flight
         {
@@ -15,7 +15,8 @@ namespace DataAccessLibrary.Models
                 [Required]
                 public string FlightId { get; set; }
                 [Required(ErrorMessage = "A Company Name is required")]
-                [JsonPropertyName("company_name")]
+               
+                [JsonProperty("company_name")]
                 [MaxLength(100)]
                 public string CompanyName { get; set; }
 
@@ -26,13 +27,15 @@ namespace DataAccessLibrary.Models
                 [Range(-90.000001, 90)]
                 public double Latitude { get; set; }
                 [Required]
-                [JsonPropertyName("date_time")]
+               
+                [JsonProperty("date_time")]
                 public DateTime DateTime { get; set; }
 
                 [Required]
                 public int Passengers { get; set; }
 
-                [JsonPropertyName("is_external")]
+                
+                [JsonProperty("is_external")]
                 [DefaultValue(false)]
                 public bool IsExternal { get; set; }
         }

@@ -9,7 +9,8 @@ using Microsoft.Extensions.Logging;
 
 namespace FlightControlWeb
 {
-        using DataAccessLibrary.Data;
+    using System.IO;
+    using DataAccessLibrary.Data;
         using DataAccessLibrary.Models;
         using Microsoft.CodeAnalysis.CSharp.Syntax;
         using Microsoft.EntityFrameworkCore;
@@ -29,7 +30,7 @@ namespace FlightControlWeb
                         Host.CreateDefaultBuilder(args).ConfigureWebHostDefaults(webBuilder =>
                         {
                                 webBuilder.UseStartup<Startup>();
-                                
+
                         });
 
                 private static void CreateDbIfNotExists(IHost host)

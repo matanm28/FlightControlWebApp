@@ -9,11 +9,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace FlightControlWeb.Controllers {
+    using System.Collections;
+    using System.IO;
     using System.Net.Http;
     using System.Security.Cryptography;
     using System.Security.Policy;
     using System.Text;
-    using System.Text.Json;
+    using Newtonsoft.Json;
 
     [Route("api/[controller]")]
     [ApiController]
@@ -109,15 +111,14 @@ namespace FlightControlWeb.Controllers {
             if (sync_all) {
                 var servers = await this._context.ApiServer.ToListAsync();
                 List<Flight> externalFlights = new List<Flight>();
-                foreach (ApiServer server in servers) {
+                foreach (Server server in servers) {
                     using (HttpClient client = new HttpClient()) {
                         var uri = new Uri($"{server.URL}/api/Flights?relative_to={relative_to}");
                         var response = await client.GetAsync(uri);
-                        IEnumerable<Flight> tempFlights = JsonSerializer.Deserialize<IEnumerable<Flight>>(await response.Content.ReadAsByteArrayAsync());
+                        IEnumerable<Flight> tempFlights = JsonConvert.DeserializeObject<IEnumerable<Flight>>(await response.Content.ReadAsStringAsync());
                         externalFlights.AddRange(tempFlights);
                     }
                 }
-
                 foreach (Flight externalFlight in externalFlights) {
                     externalFlight.IsExternal = true;
                 }
