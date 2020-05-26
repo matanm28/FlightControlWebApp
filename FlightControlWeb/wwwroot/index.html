@@ -41,7 +41,6 @@
 
         function getFlights(datetime) {
             var relativeTime = datetime + ":00Z";
-            alert("stam");
             $.ajax({
                 type: "GET",
                 url: "api/Flights?relative_to=" + relativeTime + "&sync_all",
@@ -62,7 +61,7 @@
                         flight.company_name +
                         '</td><td><a class="delete" title="Delete" data-toggle="tooltip" style="color: black" onclick="deleteFlight(this)"><i class="fas fa-trash"></i></a></td>');
                 } else {
-                    $('#external_flights').append('<tr><td>' + flight.flight_Id + '</td><td>' + flight.company_name);
+                    $('#external_flights').append('<tr><td>' + flight.flight_id + '</td><td>' + flight.company_name);
                 }
             });
         }
