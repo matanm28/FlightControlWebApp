@@ -3,8 +3,10 @@ using System.Text;
 
 namespace DataAccessLibrary.Models {
     using System;
+    using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Security.Cryptography;
     using System.Threading.Tasks;
@@ -13,10 +15,12 @@ namespace DataAccessLibrary.Models {
     using MathNet.Numerics.Interpolation;
     using Newtonsoft.Json;
 
+    
     public class FlightPlan {
         [Key]
-        public string Id { get; set; }
-        [Required]
+        [JsonIgnore]
+        public string? Id { get; set; }
+        [Required(ErrorMessage = "Number of passengers is required")]
         public int Passengers { get; set; }
         [Required(ErrorMessage = "A Company Name is required")]
         [JsonProperty("company_name")]
@@ -24,8 +28,8 @@ namespace DataAccessLibrary.Models {
         public string CompanyName { get; set; }
         [Required(ErrorMessage = "A Location is required")]
         [JsonProperty("initial_location")]
-        public virtual Location InitialLocation { get; set; }
-        public virtual ICollection<Segment> Segments { get; set; }
+        public Location InitialLocation { get; set; }
+        public ICollection<Segment> Segments { get; set; }
 
         [JsonIgnore]
         [NotMapped]
@@ -36,15 +40,17 @@ namespace DataAccessLibrary.Models {
                     totalTimeSpan += segment.TimeSpan;
                 }
 
-                return this.InitialLocation.DateTime.Add(totalTimeSpan);
+                return this.InitialLocation.DateTime + totalTimeSpan;
             }
         }
 
         public bool IsOngoing(DateTime relativeTo) {
+            DateTime start = this.InitialLocation.DateTime;
+            DateTime end = this.EndTime;
             return relativeTo >= InitialLocation.DateTime && relativeTo <= EndTime;
         }
 
-        public async Task<Flight> GetFlightRelativeToTimeAsync(DateTime relativeTo) {
+        public async Task<Flight?> GetFlightRelativeToTimeAsync(DateTime relativeTo) {
             if (!this.IsOngoing(relativeTo)) {
                 return null;
             }
@@ -119,7 +125,6 @@ namespace DataAccessLibrary.Models {
                 currentTimeSpan += segment.TimeSpan;
                 timeSpans.Add(currentTimeSpan.TotalSeconds);
             }
-
             myTimeSpan = relativeTo - this.InitialLocation.DateTime;
             IInterpolation longitudesInterpolation = Interpolate.Linear(timeSpans, longitudes);
             IInterpolation latitudesInterpolation = Interpolate.Linear(timeSpans, latitudes);
@@ -130,31 +135,6 @@ namespace DataAccessLibrary.Models {
                                                     });
         }
 
-        private Location InterpolateLocation2(DateTime relativeTo) {
-            Location currentLocation = this.InitialLocation;
-            Segment currentSegment = null;
-            foreach (Segment segment in this.Segments) {
-                if (currentLocation.DateTime + segment.TimeSpan >= relativeTo) {
-                    currentSegment = segment;
-                    break;
-                }
-
-                currentLocation = new Location
-                                      {
-                                          Id = currentLocation.Id,
-                                          Longitude = segment.Longitude,
-                                          Latitude = segment.Latitude,
-                                          DateTime = currentLocation.DateTime + segment.TimeSpan
-                                      };
-            }
-
-            if (currentSegment != null) {
-                TimeSpan proportionalTimeSpan = relativeTo - currentLocation.DateTime;
-                double linear = proportionalTimeSpan / currentSegment.TimeSpan;
-            }
-
-            return null;
-        }
 
         /// <inheritdoc />
         public override int GetHashCode() {

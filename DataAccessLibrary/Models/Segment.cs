@@ -16,7 +16,7 @@
 
         [JsonIgnore]
         public TimeSpan TimeSpan {
-            get { return new TimeSpan(0, 0, 0, this.TimeSpanSeconds); }
+            get { return new TimeSpan(0,0,0, this.TimeSpanSeconds); }
         }
     }
 }
