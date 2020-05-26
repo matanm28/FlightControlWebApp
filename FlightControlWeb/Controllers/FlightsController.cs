@@ -16,6 +16,7 @@ namespace FlightControlWeb.Controllers {
     using System.Security.Cryptography;
     using System.Security.Policy;
     using System.Text;
+    using System.Threading;
     using DataAccessLibrary.Converters;
     using Microsoft.AspNetCore.Mvc.ModelBinding;
     using Newtonsoft.Json;
@@ -143,7 +144,7 @@ namespace FlightControlWeb.Controllers {
             }
 
             flightList.RemoveAll(plan => plan == null);
-            return Ok(flightList);
+            return flightList;
         }
 
         private async Task<IList<Flight>> getFlightsFromExternalServersAsync(DateTime relative_to) {
@@ -157,6 +158,7 @@ namespace FlightControlWeb.Controllers {
 
             List<Flight> flightsList = new List<Flight>();
             IList<HttpResponseMessage> responseList = await Task.WhenAll(tasksList);
+            client.Dispose();
             foreach (HttpResponseMessage response in responseList) {
                 try {
                     IEnumerable<Flight> tempFlights = JsonConvert.DeserializeObject<IEnumerable<Flight>>(await response.Content.ReadAsStringAsync());

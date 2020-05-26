@@ -5,7 +5,6 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
-    <link rel="stylesheet" href="/Content/bootstrap-datetimepicker.css" />
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
@@ -13,8 +12,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
-    <script type="text/javascript" src="/scripts/moment.min.js"></script>
-    <script type="text/javascript" src="/scripts/bootstrap-datetimepicker.*js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
             //getFlights();
@@ -43,12 +40,11 @@
         }
 
         function getFlights(datetime) {
-            var relativeTime = datetime + "Z";
-            alert(relativeTime);
+            var relativeTime = datetime + ":00Z";
+            alert("stam");
             $.ajax({
                 type: "GET",
-                //url: "api/Flights/list",
-                url: "api/Flight?relative_to=" + relativeTime + "&sync_all",
+                url: "api/Flights?relative_to=" + relativeTime + "&sync_all",
                 success: addToTable,
                 error: function () {
                     alert("Failed getting flights");
@@ -66,7 +62,7 @@
                         flight.company_name +
                         '</td><td><a class="delete" title="Delete" data-toggle="tooltip" style="color: black" onclick="deleteFlight(this)"><i class="fas fa-trash"></i></a></td>');
                 } else {
-                    $('#external_flights').append('<tr><td>' + flight.flightId + '</td><td>' + flight.company_name);
+                    $('#external_flights').append('<tr><td>' + flight.flight_Id + '</td><td>' + flight.company_name);
                 }
             });
         }
@@ -123,11 +119,9 @@
         </div>
         <div class="container col-4">
             <div>
-                <form action="/action_page.php">
-                    <label for="datetime">Enter relative date and time flights:</label>
+                <label for="datetime">Enter relative date and time flights:</label>
                     <input type="datetime-local" id="datetime" name="datetime">
                     <input type="submit" onclick="getFlights(datetime.value)">
-                </form>
             </div>
         </div>
 </div>
