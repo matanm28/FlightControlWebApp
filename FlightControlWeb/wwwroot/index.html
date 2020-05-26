@@ -13,6 +13,7 @@
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
     <script type="text/javascript">
+        var markerDict = {};
         $(document).ready(function () {
             //getFlights();
             // Delete row on delete button click
@@ -32,6 +33,7 @@
                     //delete from map
                     row.remove();
                     $(".add-new").removeAttr("disabled");
+                    map.removeLayer(markerDict[id]);
                 },
                 error: function () {
                     alert("failed to delete flight: " + id);
@@ -41,7 +43,6 @@
 
         function getFlights(datetime) {
             var relativeTime = datetime + ":00Z";
-            alert("stam");
             $.ajax({
                 type: "GET",
                 url: "api/Flights?relative_to=" + relativeTime + "&sync_all",
@@ -53,18 +54,39 @@
         }
 
         function addToTable(flights) {
+            //delete all former flights
+            initialTablesAndMarkers();
             flights.forEach(function (flight) {
                 addToMap(flight);
                 if (!flight.is_external) {
-                    $('#my_flights').append('<tr><td>' +
+                    $('#my_flights').append('<tr id=' + flight.flight_id +' onclick="popupFlightDetails(id)"><td>' +
                         flight.flight_id +
                         '</td><td>' +
                         flight.company_name +
                         '</td><td><a class="delete" title="Delete" data-toggle="tooltip" style="color: black" onclick="deleteFlight(this)"><i class="fas fa-trash"></i></a></td>');
                 } else {
-                    $('#external_flights').append('<tr><td>' + flight.flight_Id + '</td><td>' + flight.company_name);
+                    $('#external_flights').append('<tr id=' + flight.flight_id + '><td>' + flight.flight_id + '</td><td>' + flight.company_name);
                 }
             });
+        }
+
+        function popupFlightDetails(id) {
+            var marker = markerDict[id];
+            marker.togglePopup();
+        }
+
+        function initialTablesAndMarkers() {
+            var count = document.getElementById("my_flights").rows.length;
+            for (i = 1; i < count; i++) {
+                document.getElementById("my_flights").deleteRow(i);
+            }
+            var count = document.getElementById("external_flights").rows.length;
+            for (i = 1; i < count; i++) {
+                document.getElementById("external_flights").deleteRow(i);
+            }
+            for (var id in markerDict) {
+                map.removeLayer(markerDict[id]);
+            }
         }
 
         function addToMap(flight) {
@@ -75,20 +97,17 @@
                 popupAnchor: [0, -10]
             });
             var marker = L.marker([flight.latitude, flight.longitude], { icon: plainIcon }).addTo(map);
-            marker.bindPopup(flight.flightId);
-            //marker.bindPopup(
-            //    "<b>Flight Details<br>flight id:" +
-            //    flight.flightId +
-            //    "<br>longitude: " +
-            //    flight.longitude +
-            //    "<br>latitude: " +
-            //    flight.latitude +
-            //    "<br>passengers: " +
-            //    flight.passengers +
-            //    "<br>company name: " + flight.company_name +
-            //    "<br>date time: " + flight.date_time + "<br>is external: " +
-            //    flight.is_external +
-            //    "</b>");
+            //marker.bindPopup(flight.flight_id);
+            marker.bindPopup(
+                "<b><strong>Flight Details<br>flight id:</strong> " +
+                flight.flight_id +
+                "<br><strong>passengers:</strong> " +
+                flight.passengers +
+                "<br><strong>company name:</strong> " + flight.company_name +
+                "<br><strong>date time:</strong> " + flight.date_time + "<br><strong>is external:</strong> " +
+                flight.is_external +
+                "</b>");
+            markerDict[flight.flight_id] = marker;
         }
 
     </script>
@@ -120,8 +139,8 @@
         <div class="container col-4">
             <div>
                 <label for="datetime">Enter relative date and time flights:</label>
-                    <input type="datetime-local" id="datetime" name="datetime">
-                    <input type="submit" onclick="getFlights(datetime.value)">
+                <input type="datetime-local" id="datetime" name="datetime">
+                <input type="submit" onclick="getFlights(datetime.value)">
             </div>
         </div>
 </div>
@@ -169,20 +188,6 @@
                         <th>Company Name</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    <tr>
-                        <td>John Doe</td>
-                        <td>Administration</td>
-                    </tr>
-                    <tr>
-                        <td>Peter Parker</td>
-                        <td>Customer Service</td>
-                    </tr>
-                    <tr>
-                        <td>Fran Wilson</td>
-                        <td>Human Resources</td>
-                    </tr>
-                    </tbody>
                 </table>
             </tr>
         </table>
