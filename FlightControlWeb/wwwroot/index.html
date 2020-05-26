@@ -28,8 +28,8 @@
             $.ajax({
                 type: "DELETE",
                 url: "api/Flights/" + id,
-                //real => url: "api/Flights?relative_to=<DateTime>&sync_all",
-                success: function() {
+                success: function () {
+                    //delete from map
                     row.remove();
                     $(".add-new").removeAttr("disabled");
                 },
@@ -52,7 +52,8 @@
         }
 
         function addToTable(flights) {
-            flights.forEach(function(flight) {
+            flights.forEach(function (flight) {
+                addToMap(flight);
                 if (!flight.is_external) {
                     $('#my_flights').append('<tr><td>' +
                         flight.flightId +
@@ -60,9 +61,33 @@
                         flight.company_name +
                         '</td><td><a class="delete" title="Delete" data-toggle="tooltip" style="color: black" onclick="deleteFlight(this)"><i class="fas fa-trash"></i></a></td>');
                 } else {
-                    $('#external_flights').append('<tr><td>' + flight.id + '</td><td>' + flight.company_name);
+                    $('#external_flights').append('<tr><td>' + flight.flightId + '</td><td>' + flight.company_name);
                 }
             });
+        }
+
+        function addToMap(flight) {
+            var plainIcon = L.icon({
+                iconUrl: 'custom-plane-icon.png',
+                iconSize: [46, 20],
+                iconAnchor: [23, 10],
+                popupAnchor: [0, -10]
+            });
+            var marker = L.marker([flight.latitude, flight.longitude], { icon: plainIcon }).addTo(map);
+            marker.bindPopup(flight.flightId);
+            //marker.bindPopup(
+            //    "<b>Flight Details<br>flight id:" +
+            //    flight.flightId +
+            //    "<br>longitude: " +
+            //    flight.longitude +
+            //    "<br>latitude: " +
+            //    flight.latitude +
+            //    "<br>passengers: " +
+            //    flight.passengers +
+            //    "<br>company name: " + flight.company_name +
+            //    "<br>date time: " + flight.date_time + "<br>is external: " +
+            //    flight.is_external +
+            //    "</b>");
         }
 
     </script>
