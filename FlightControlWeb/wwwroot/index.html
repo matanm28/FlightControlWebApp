@@ -1,20 +1,23 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8"/>
+    <meta charset="utf-8" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"/>
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+    <link rel="stylesheet" href="/Content/bootstrap-datetimepicker.css" />
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.0.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script type="text/javascript" src="/scripts/moment.min.js"></script>
+    <script type="text/javascript" src="/scripts/bootstrap-datetimepicker.*js"></script>
     <script type="text/javascript">
-        $(document).ready(function() {
-            getFlights();
+        $(document).ready(function () {
+            //getFlights();
             // Delete row on delete button click
             //$(document).on("click",
             //    ".delete",
@@ -33,19 +36,21 @@
                     row.remove();
                     $(".add-new").removeAttr("disabled");
                 },
-                error: function() {
+                error: function () {
                     alert("failed to delete flight: " + id);
                 }
             });
         }
 
-        function getFlights(parameters) {
+        function getFlights(datetime) {
+            var relativeTime = datetime + "Z";
+            alert(relativeTime);
             $.ajax({
                 type: "GET",
-                url: "api/Flights/list",
-                //real => url: "api/Flights?relative_to=<DateTime>&sync_all",
+                //url: "api/Flights/list",
+                url: "api/Flight?relative_to=" + relativeTime + "&sync_all",
                 success: addToTable,
-                error: function() {
+                error: function () {
                     alert("Failed getting flights");
                 }
             });
@@ -105,15 +110,26 @@
             background-size: cover;
         }
 
-        .fa-trash:hover { color: red; }
+        .fa-trash:hover {
+            color: red;
+        }
     </style>
 </head>
 <body>
-<div class="test col-12" style="color: whitesmoke; font-family: unset">
-    <h1 style="font-size: 52px">Flights Control </h1>
-</div>
-<div class="test col-12" style="color: whitesmoke; font-family: initial">
-    <h2 style="font-size: 15px">Matan Malka & Sapir Graffi </h2>
+<div class="row">
+        <div class="col-8" style="color: whitesmoke">
+            <h1 style="font-size: 52px; font-family: unset">Flights Control </h1>
+            <h2 style="font-size: 15px; font-family: initial">Matan Malka & Sapir Graffi </h2>
+        </div>
+        <div class="container col-4">
+            <div>
+                <form action="/action_page.php">
+                    <label for="datetime">Enter relative date and time flights:</label>
+                    <input type="datetime-local" id="datetime" name="datetime">
+                    <input type="submit" onclick="getFlights(datetime.value)">
+                </form>
+            </div>
+        </div>
 </div>
 <div class="row">
     <div id="map" class="col-7">
