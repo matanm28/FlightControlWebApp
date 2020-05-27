@@ -14,7 +14,9 @@
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
     <script type="text/javascript">
         var markerDict = {};
+        var lastRow = "";
         $(document).ready(function () {
+
             //getFlights();
             // Delete row on delete button click
             //$(document).on("click",
@@ -71,7 +73,22 @@
         }
 
         function popupFlightDetails(id) {
-            alert("in here");
+           var row = document.getElementById(id);
+           //if (row.style.background == white) {
+           //    row.style.background = visible;
+           //} else {
+           //    row.style.background = white;
+           //}
+            if (lastRow != "" && lastRow != row) {
+                $(lastRow).css('background', '');
+            }
+            if (row.style.background == "" || row.style.background == "white") {
+                $(row).css('background', 'blue');
+           }
+            else {
+                $(row).css('background', '');
+            }
+            lastRow = row;
             var marker = markerDict[id];
             marker.togglePopup();
         }
@@ -169,14 +186,14 @@
                         '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
                 }).addTo(map);
             //create plains
-            var plainIcon = L.icon({
-                iconUrl: 'custom-plane-icon.png',
-                iconSize: [95, 40],
-                iconAnchor: [51.5, -0.11]
-            });
-            var marker = L.marker([51.5, -0.11], { icon: plainIcon }).addTo(map);
-            marker.bindPopup(
-                "<b>Flight Details<br>flight id:<br>longitude:<br>latitude:<br>passengers:<br>company name:<br>date time:<br>is external:</b>");
+            //var plainIcon = L.icon({
+            //    iconUrl: 'custom-plane-icon.png',
+            //    iconSize: [95, 40],
+            //    iconAnchor: [51.5, -0.11]
+            //});
+            //var marker = L.marker([51.5, -0.11], { icon: plainIcon }).addTo(map);
+            //marker.bindPopup(
+            //    "<b>Flight Details<br>flight id:<br>longitude:<br>latitude:<br>passengers:<br>company name:<br>date time:<br>is external:</b>");
         </script>
     </div>
     <div class="twoTables col-md-5">
@@ -184,7 +201,7 @@
             <tr>
                 <h2>My Flights</h2>
                 <table class="table table-bordered table-striped table-hover" id="my_flights">
-                    <thead>
+                    <thead style="color: white; background: black">
                     <tr>
                         <th>Fight id</th>
                         <th>Company Name</th>
@@ -196,7 +213,7 @@
             <tr>
                 <h2>External Flights</h2>
                 <table class="table table-bordered table-striped table-hover" id="external_flights">
-                    <thead>
+                    <thead style="color: white; background: black">
                     <tr>
                         <th>Flight id</th>
                         <th>Company Name</th>
