@@ -49,10 +49,23 @@ namespace DataAccessLibrary.Models {
             DateTime end = this.EndTime;
             return relativeTo >= InitialLocation.DateTime && relativeTo <= EndTime;
         }
-        
+
         /// <inheritdoc />
         public override int GetHashCode() {
-            return HashCode.Combine(this.Id, this.Passengers, this.CompanyName, this.InitialLocation, this.Segments);
+            using (SHA256 hashFunction = SHA256.Create()) {
+                double segmentsLatitudeLongitudeSum = 0;
+                double segmentsTotalSeconds = 0;
+                foreach (Segment segment in Segments) {
+                    segmentsLatitudeLongitudeSum += segment.Latitude + segment.Longitude;
+                    segmentsTotalSeconds += segment.TimeSpan.TotalSeconds;
+                }
+
+                var hashValue = hashFunction.ComputeHash(Encoding.UTF8.GetBytes(this.CompanyName + this.Passengers
+                                                                                                 + this.InitialLocation.Longitude + this.InitialLocation.Latitude
+                                                                                                 + this.InitialLocation.DateTime.ToString() + segmentsTotalSeconds
+                                                                                                 + segmentsLatitudeLongitudeSum));
+                return BitConverter.ToInt32(hashValue);
+            }
         }
 
         protected bool Equals(FlightPlan other) {
