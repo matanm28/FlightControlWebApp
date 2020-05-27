@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLibrary.Migrations
 {
     [DbContext(typeof(FlightControlContext))]
-    [Migration("20200524160524_DBCreation")]
+    [Migration("20200527092511_DBCreation")]
     partial class DBCreation
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -18,39 +18,9 @@ namespace DataAccessLibrary.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "3.1.4");
 
-            modelBuilder.Entity("DataAccessLibrary.Models.Flight", b =>
-                {
-                    b.Property<string>("FlightId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CompanyName")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasMaxLength(100);
-
-                    b.Property<DateTime>("DateTime")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsExternal")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<double>("Latitude")
-                        .HasColumnType("REAL");
-
-                    b.Property<double>("Longitude")
-                        .HasColumnType("REAL");
-
-                    b.Property<int>("Passengers")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("FlightId");
-
-                    b.ToTable("Flights");
-                });
-
             modelBuilder.Entity("DataAccessLibrary.Models.FlightPlan", b =>
                 {
-                    b.Property<string>("FlightId")
+                    b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("CompanyName")
@@ -64,7 +34,7 @@ namespace DataAccessLibrary.Migrations
                     b.Property<int>("Passengers")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("FlightId");
+                    b.HasKey("Id");
 
                     b.HasIndex("InitialLocationId");
 
@@ -73,7 +43,7 @@ namespace DataAccessLibrary.Migrations
 
             modelBuilder.Entity("DataAccessLibrary.Models.Location", b =>
                 {
-                    b.Property<int>("FlightId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -86,14 +56,14 @@ namespace DataAccessLibrary.Migrations
                     b.Property<double>("Longitude")
                         .HasColumnType("REAL");
 
-                    b.HasKey("FlightId");
+                    b.HasKey("Id");
 
                     b.ToTable("Locations");
                 });
 
             modelBuilder.Entity("DataAccessLibrary.Models.Segment", b =>
                 {
-                    b.Property<int>("FlightId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -109,7 +79,7 @@ namespace DataAccessLibrary.Migrations
                     b.Property<int>("TimeSpanSeconds")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("FlightId");
+                    b.HasKey("Id");
 
                     b.HasIndex("FlightPlanId");
 
@@ -118,7 +88,7 @@ namespace DataAccessLibrary.Migrations
 
             modelBuilder.Entity("DataAccessLibrary.Models.Server", b =>
                 {
-                    b.Property<int>("FlightId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -127,7 +97,7 @@ namespace DataAccessLibrary.Migrations
                         .HasColumnType("TEXT")
                         .HasMaxLength(1024);
 
-                    b.HasKey("FlightId");
+                    b.HasKey("Id");
 
                     b.ToTable("ApiServer");
                 });

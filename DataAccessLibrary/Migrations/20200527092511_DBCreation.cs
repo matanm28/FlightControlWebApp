@@ -21,23 +21,6 @@ namespace DataAccessLibrary.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Flights",
-                columns: table => new
-                {
-                    FlightId = table.Column<string>(nullable: false),
-                    CompanyName = table.Column<string>(maxLength: 100, nullable: false),
-                    Longitude = table.Column<double>(nullable: false),
-                    Latitude = table.Column<double>(nullable: false),
-                    DateTime = table.Column<DateTime>(nullable: false),
-                    Passengers = table.Column<int>(nullable: false),
-                    IsExternal = table.Column<bool>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Flights", x => x.FlightId);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Locations",
                 columns: table => new
                 {
@@ -68,7 +51,7 @@ namespace DataAccessLibrary.Migrations
                         name: "FK_FlightPlans_Locations_InitialLocationId",
                         column: x => x.InitialLocationId,
                         principalTable: "Locations",
-                        principalColumn: "FlightId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -90,7 +73,7 @@ namespace DataAccessLibrary.Migrations
                         name: "FK_Segmentses_FlightPlans_FlightPlanId",
                         column: x => x.FlightPlanId,
                         principalTable: "FlightPlans",
-                        principalColumn: "FlightId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -109,9 +92,6 @@ namespace DataAccessLibrary.Migrations
         {
             migrationBuilder.DropTable(
                 name: "ApiServer");
-
-            migrationBuilder.DropTable(
-                name: "Flights");
 
             migrationBuilder.DropTable(
                 name: "Segmentses");

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 
 
 namespace FlightControlWeb {
+    using System.Net.Http;
     using System.Reflection;
     using Autofac;
     using Autofac.Integration.WebApi;
@@ -32,11 +33,13 @@ namespace FlightControlWeb {
                                                             options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
                                                             options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
                                                         });
+            services.AddHttpClient();
+            services.AddMvc().AddControllersAsServices();
         }
 
         public void ConfigureContainer(ContainerBuilder builder) {
             builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
-            builder.RegisterType<FlightControlContext>().AsSelf();
+            builder.RegisterType<FlightControlContext>().As<DbContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
