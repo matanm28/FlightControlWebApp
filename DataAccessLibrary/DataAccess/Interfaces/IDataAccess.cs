@@ -6,6 +6,7 @@
     using System.Linq.Expressions;
     using System.Threading.Tasks;
     using DataAccessLibrary.Models;
+    using Microsoft.EntityFrameworkCore.ChangeTracking;
 
     public interface IDataAccess<T, S> where T : class, new() where S : IComparable<S> {
         Task<List<T>> GetAllAsync();
@@ -14,7 +15,7 @@
 
         Task<T?> FindAsync(S id);
 
-        Task<bool> ExistsAsync<T>(S id);
+        Task<bool> ExistsAsync(S id);
 
         Task<bool> ExistsAsync(T element);
 
@@ -23,5 +24,9 @@
         Task<T?> RemoveAsync(T element);
 
         Task<T?> RemoveAsync(S id);
+
+        Task<EntityEntry<T>> AddAsync(T element);
+
+
     }
 }

@@ -18,25 +18,28 @@ namespace FlightControlWeb.Controllers {
     using System.Text;
     using System.Threading;
     using DataAccessLibrary.Converters;
+    using DataAccessLibrary.DataAccess.Enums;
+    using DataAccessLibrary.DataAccess.Interfaces;
     using Microsoft.AspNetCore.Mvc.ModelBinding;
     using Newtonsoft.Json;
 
     [Route("api/[controller]")]
     [ApiController]
-    public class FlightsController : ControllerBase {
-        public enum Sync { sync_all, no_sync };
+    public class FlightsController : ControllerBase, IFlightsController {
+        private readonly IFlightPlansService flightPlansService;
+        private readonly IServerService serverService;
 
-        private readonly FlightControlContext _context;
-
-        public FlightsController(FlightControlContext context) {
-            _context = context;
+        /// <inheritdoc />
+        public FlightsController(IFlightPlansService flightPlansService, IServerService serverService) {
+            this.flightPlansService = flightPlansService;
+            this.serverService = serverService;
         }
 
         // GET: api/Flights
         [HttpGet("List")]
         public async Task<ActionResult<IEnumerable<Flight>>> GetFlights() {
             IList<Flight> flights = new List<Flight>();
-            var flightPlans = await _context.FlightPlans.Include(nameof(FlightPlan.InitialLocation)).ToListAsync();
+            var flightPlans = await this.flightPlansService.GetAllAsync(FlightPlansProperty.IntialLocation);
             foreach (FlightPlan flightPlan in flightPlans) {
                 if (flightPlan != null) {
                     flights.Add(new Flight(flightPlan));
@@ -49,9 +52,7 @@ namespace FlightControlWeb.Controllers {
         // GET: api/Flights/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Flight>> GetFlight(string id) {
-            var flightPlan = await _context.FlightPlans.Include(nameof(FlightPlan.InitialLocation)).Include(nameof(FlightPlan.Segments))
-                                       .FirstOrDefaultAsync(x => x.Id == id);
-
+            var flightPlan = await this.flightPlansService.FindAsync(id);
             if (flightPlan == null) {
                 return NotFound();
             }
@@ -62,14 +63,12 @@ namespace FlightControlWeb.Controllers {
         // DELETE: api/Flights/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<Flight>> DeleteFlight(string id) {
-            var flightPlan = await _context.FlightPlans.Include(nameof(FlightPlan.InitialLocation)).Include(nameof(FlightPlan.Segments))
-                                           .FirstOrDefaultAsync(x => x.Id == id);
-            if (flightPlan == null) {
+            if (!await this.flightPlansService.ExistsAsync(id)) {
                 return NotFound();
             }
 
-            _context.FlightPlans.Remove(flightPlan);
-            await _context.SaveChangesAsync();
+            var flightPlan = await this.flightPlansService.RemoveAsync(id);
+            await this.flightPlansService.SaveChangesAsync();
 
             return Ok(new Flight(flightPlan));
         }
@@ -81,8 +80,7 @@ namespace FlightControlWeb.Controllers {
                 return BadRequest($"requset:\"{this.Request}\"\nstatus:\"failed\"\nreason:\"relative_to format must be yyyy-MM-ddTHH:mm:ssZ (UTC time)\"");
             }
 
-            var flightPlansList = await this._context.FlightPlans.Include(x => x.InitialLocation).Include(x => x.Segments)
-                                            .Where(flight => relative_to >= flight.InitialLocation.DateTime).ToListAsync();
+            var flightPlansList = await this.flightPlansService.GetAllAsync(flight => relative_to >= flight.InitialLocation.DateTime);
             IList<Task<Flight?>> flightTasks = new List<Task<Flight?>>();
             foreach (FlightPlan flightPlan in flightPlansList) {
                 flightTasks.Add(Flight.GetFlightRelativeToTimeAsync(flightPlan, relative_to));
@@ -100,7 +98,7 @@ namespace FlightControlWeb.Controllers {
         }
 
         private async Task<IList<Flight>> getFlightsFromExternalServersAsync(DateTime relative_to) {
-            var servers = await this._context.Servers.ToListAsync();
+            var servers = await this.serverService.GetAllAsync();
             IList<Task<HttpResponseMessage>> tasksList = new List<Task<HttpResponseMessage>>();
             HttpClient client = new HttpClient();
             foreach (Server server in servers) {
@@ -119,6 +117,7 @@ namespace FlightControlWeb.Controllers {
                     }
                 }
                 catch (Exception e) {
+                    //todo add logger
                     continue;
                 }
             }
@@ -128,8 +127,5 @@ namespace FlightControlWeb.Controllers {
             return flightsList;
         }
 
-        private bool FlightExists(string id) {
-            return _context.FlightPlans.Any(e => e.Id == id);
-        }
     }
 }

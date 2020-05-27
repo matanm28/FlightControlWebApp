@@ -11,6 +11,9 @@ namespace FlightControlWeb {
     using Autofac;
     using Autofac.Integration.WebApi;
     using DataAccessLibrary.Data;
+    using DataAccessLibrary.DataAccess.Implementations;
+    using DataAccessLibrary.DataAccess.Interfaces;
+    using FlightControlWeb.Controllers;
     using Microsoft.EntityFrameworkCore;
     using Newtonsoft.Json;
 
@@ -40,6 +43,11 @@ namespace FlightControlWeb {
         public void ConfigureContainer(ContainerBuilder builder) {
             builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
             builder.RegisterType<FlightControlContext>().As<DbContext>();
+            builder.RegisterType<FlightPlansService>().As<IFlightPlansService>();
+            builder.RegisterType<ServerService>().As<IServerService>();
+            builder.RegisterType<FlightPlanController>().As<IFlightPlanController>();
+            builder.RegisterType<ServersController>().As<IServersController>();
+            builder.RegisterType<FlightsController>().As<IFlightsController>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

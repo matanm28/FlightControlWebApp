@@ -10,36 +10,36 @@ using DataAccessLibrary.Models;
 
 namespace FlightControlWeb.Controllers
 {
+    using DataAccessLibrary.DataAccess.Interfaces;
+
     [Route("api/[controller]")]
     [ApiController]
-    public class ServersController : ControllerBase
-    {
-        private readonly FlightControlContext _context;
+    public class ServersController : ControllerBase, IServersController {
+        private readonly IServerService serverService;
 
-        public ServersController(FlightControlContext context)
-        {
-            _context = context;
+        /// <inheritdoc />
+        public ServersController(IServerService serverService) {
+            this.serverService = serverService;
         }
-
+        
         // GET: api/ApiServers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Server>>> GetApiServer()
         {
-            return await _context.Servers.ToListAsync();
+            return await this.serverService.GetAllAsync();
         }
 
         // GET: api/ApiServers/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Server>> GetApiServer(int id)
         {
-            var apiServer = await _context.Servers.FindAsync(id);
-
+            var apiServer = await this.serverService.FindAsync(id);
             if (apiServer == null)
             {
                 return NotFound();
             }
 
-            return apiServer;
+            return Ok(apiServer);
         }
 
         // POST: api/ApiServers
@@ -48,31 +48,24 @@ namespace FlightControlWeb.Controllers
         [HttpPost]
         public async Task<ActionResult<Server>> PostApiServer(Server server)
         {
-            _context.Servers.Add(server);
-            await _context.SaveChangesAsync();
+            await this.serverService.AddAsync(server);
 
             return CreatedAtAction("GetApiServer", new { id = server.Id }, server);
         }
 
         // DELETE: api/ApiServers/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Server>> DeleteApiServer(int id)
-        {
-            var apiServer = await _context.Servers.FindAsync(id);
+        public async Task<ActionResult<Server>> DeleteApiServer(int id) {
+            
+            var apiServer = await this.serverService.RemoveAsync(id);
             if (apiServer == null)
             {
                 return NotFound();
             }
 
-            _context.Servers.Remove(apiServer);
-            await _context.SaveChangesAsync();
-
+            await this.serverService.SaveChangesAsync();
             return apiServer;
         }
 
-        private bool ApiServerExists(int id)
-        {
-            return _context.Servers.Any(e => e.Id == id);
-        }
     }
 }

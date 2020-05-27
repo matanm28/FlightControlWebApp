@@ -15,33 +15,36 @@ namespace FlightControlWeb.Controllers {
     using System.Security.Cryptography;
     using System.Text;
     using Castle.Core.Internal;
+    using DataAccessLibrary.DataAccess.Interfaces;
     using Newtonsoft.Json;
 
     [Route("api/[controller]")]
     [ApiController]
-    public class FlightPlanController : ControllerBase {
+    public class FlightPlanController : ControllerBase, IFlightPlanController {
         private static ISet<string> flightPlansId = new HashSet<string>();
         private const int ModNumber = 100000;
-        private readonly FlightControlContext context;
         private readonly IHttpClientFactory httpClientFactory;
         private readonly ServersController serversController;
+        private readonly IFlightPlansService flightPlansService;
 
-        public FlightPlanController(FlightControlContext context, ServersController serversController, IHttpClientFactory httpClientFactory) {
-            this.context = context;
-            this.httpClientFactory = httpClientFactory;
+        /// <inheritdoc />
+        public FlightPlanController(IFlightPlansService flightPlansService, IHttpClientFactory httpClientFactory, ServersController serversController) {
+            this.flightPlansService = flightPlansService;
             this.serversController = serversController;
+            this.httpClientFactory = httpClientFactory;
         }
+
 
         // GET: api/FlightPlans
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FlightPlan>>> GetFlightPlans() {
-            return await this.context.FlightPlans.Include(x => x.Segments).Include(x => x.InitialLocation).ToListAsync();
+            return await this.flightPlansService.GetAllAsync();
         }
 
         // GET: api/FlightPlans/5
         [HttpGet("{id}")]
         public async Task<ActionResult<FlightPlan>> GetFlightPlan(string id) {
-            if (flightPlansId.Contains(id)) {
+            if (!await this.flightPlansService.ExistsAsync(id)) {
                 return NotFound(id);
             }
 
@@ -86,53 +89,31 @@ namespace FlightControlWeb.Controllers {
         [HttpPost]
         public async Task<ActionResult<FlightPlan>> PostFlightPlan(FlightPlan flightPlan) {
             flightPlan.Id = GenerateFlightId(flightPlan);
-            if (FlightPlanExists(flightPlan.Id)) {
+            if (await this.flightPlansService.ExistsAsync(flightPlan.Id)) {
                 return Conflict(flightPlan);
             }
-            //Flight flight = new Flight(flightPlan);
-            //var sendRequest = await this.postFlight(flight);
-            //if (!sendRequest.IsSuccessStatusCode) {
-            //    Debug.WriteLine(sendRequest);
-            //    return BadRequest(flight);
-            //}
 
-            this.context.FlightPlans.Add(flightPlan);
-            await this.context.SaveChangesAsync();
+            await this.flightPlansService.AddAsync(flightPlan);
+            await this.flightPlansService.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetFlightPlan), new { id = flightPlan.Id }, flightPlan);
         }
 
         [HttpPost("List")]
         public async Task<ActionResult<IEnumerable<FlightPlan>>> PostFlightPlansList(IEnumerable<FlightPlan> flightPlans) {
+            List<FlightPlan> acceptedFlightPlans = new List<FlightPlan>();
             foreach (FlightPlan flightPlan in flightPlans) {
-                var actionResult = await PostFlightPlan(flightPlan);
-                if (!(actionResult.Result is CreatedAtActionResult)) {
-                    return BadRequest(flightPlan);
+                flightPlan.Id = GenerateFlightId(flightPlan);
+                if (!await this.flightPlansService.ExistsAsync(flightPlan.Id)) {
+                    await this.flightPlansService.AddAsync(flightPlan);
+                    acceptedFlightPlans.Add(flightPlan);
                 }
+                
             }
-
-            return CreatedAtAction(nameof(GetFlightPlans), flightPlans);
+            await this.flightPlansService.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetFlightPlans), acceptedFlightPlans);
         }
         
-        private bool FlightPlanExists(string id) {
-            return this.context.FlightPlans.Any(e => e.Id == id);
-        }
-
-        private async Task<HttpResponseMessage> postFlight(Flight flight) {
-            using (HttpClient client = new HttpClient()) {
-                var check = this.Request.Host.Value;
-                var uri = new Uri("https://" + this.Request.Host.Value + "/api/Flights");
-                string contents = JsonConvert.SerializeObject(flight);
-                var response = client.PostAsync(uri, new StringContent(contents, Encoding.UTF8, "application/json"));
-                var result = await response.ConfigureAwait(false);
-                if (!result.IsSuccessStatusCode) {
-                    return result;
-                }
-
-                return result;
-            }
-        }
-
         private static string GenerateFlightId(FlightPlan flightPlan) {
             StringBuilder sb = new StringBuilder();
             int mod = ModNumber;

@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLibrary.Migrations
 {
     [DbContext(typeof(FlightControlContext))]
-    [Migration("20200527092511_DBCreation")]
+    [Migration("20200527200618_DBCreation")]
     partial class DBCreation
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -86,7 +86,7 @@ namespace DataAccessLibrary.Migrations
                     b.ToTable("Segmentses");
                 });
 
-            modelBuilder.Entity("DataAccessLibrary.Models.Servers", b =>
+            modelBuilder.Entity("DataAccessLibrary.Models.Server", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

@@ -9,12 +9,18 @@
     using DataAccessLibrary.DataAccess.Interfaces;
     using DataAccessLibrary.Models;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.ChangeTracking;
 
     public class ServerService : IServerService {
         private readonly FlightControlContext dbContext;
 
         public ServerService(FlightControlContext dbContext) {
             this.dbContext = dbContext;
+        }
+
+        /// <inheritdoc />
+        public async Task<EntityEntry<Server>> AddAsync(Server element) {
+            return await this.dbContext.Servers.AddAsync(element);
         }
 
         /// <inheritdoc />
@@ -33,7 +39,7 @@
         }
 
         /// <inheritdoc />
-        public async Task<bool> ExistsAsync<T>(int id) {
+        public async Task<bool> ExistsAsync(int id) {
             return (await this.FindAsync(id) != null);
         }
 
@@ -71,7 +77,6 @@
             }
 
             this.dbContext.Remove(server);
-            await this.SaveChangesAsync();
             return server;
         }
 
