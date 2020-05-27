@@ -16,36 +16,6 @@ namespace DataAccessLibrary.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "3.1.4");
 
-            modelBuilder.Entity("DataAccessLibrary.Models.Flight", b =>
-                {
-                    b.Property<string>("FlightId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CompanyName")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasMaxLength(100);
-
-                    b.Property<DateTime>("DateTime")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsExternal")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<double>("Latitude")
-                        .HasColumnType("REAL");
-
-                    b.Property<double>("Longitude")
-                        .HasColumnType("REAL");
-
-                    b.Property<int>("Passengers")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("FlightId");
-
-                    b.ToTable("Flights");
-                });
-
             modelBuilder.Entity("DataAccessLibrary.Models.FlightPlan", b =>
                 {
                     b.Property<string>("Id")

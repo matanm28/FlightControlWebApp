@@ -24,8 +24,16 @@ namespace FlightControlWeb
                 public static void Main(string[] args)
                 {
 
-                        var host = CreateHostBuilder(args).UseServiceProviderFactory(new AutofacServiceProviderFactory()).Build();
-                        TypeDescriptor.AddAttributes(typeof(DateTime), new TypeConverterAttribute(typeof(UtcDateTimeConverter)));
+                        var host = Host.CreateDefaultBuilder(args)
+                                       .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+                                       .ConfigureWebHostDefaults(webHostBuilder => {
+                                                                     webHostBuilder
+                                                                            .UseContentRoot(Directory.GetCurrentDirectory())
+                                                                            .UseIISIntegration()
+                                                                            .UseStartup<Startup>();
+                                                                 })
+                                       .Build();
+            TypeDescriptor.AddAttributes(typeof(DateTime), new TypeConverterAttribute(typeof(UtcDateTimeConverter)));
                         CreateDbIfNotExists(host);
                         
                         host.Run();
@@ -44,7 +52,7 @@ namespace FlightControlWeb
                                 var services = scope.ServiceProvider;
 
                                 try {
-                                        var context = services.GetRequiredService<FlightControlContext>();
+                                        var context = services.GetRequiredService<DbContext>();
                                         context.Database.EnsureCreated();
                                         context.Database.Migrate();
                                 }
