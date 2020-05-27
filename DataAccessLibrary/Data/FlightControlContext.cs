@@ -10,7 +10,7 @@ namespace DataAccessLibrary.Data {
         public DbSet<FlightPlan> FlightPlans { get; set; }
         public DbSet<Location> Locations { get; set; }
         public DbSet<Segment> Segmentses { get; set; }
-        public DbSet<Server> ApiServer { get; set; }
+        public DbSet<Server> Servers { get; set; }
 
 
         /// <inheritdoc />

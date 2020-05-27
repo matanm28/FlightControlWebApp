@@ -100,7 +100,7 @@ namespace FlightControlWeb.Controllers {
         }
 
         private async Task<IList<Flight>> getFlightsFromExternalServersAsync(DateTime relative_to) {
-            var servers = await this._context.ApiServer.ToListAsync();
+            var servers = await this._context.Servers.ToListAsync();
             IList<Task<HttpResponseMessage>> tasksList = new List<Task<HttpResponseMessage>>();
             HttpClient client = new HttpClient();
             foreach (Server server in servers) {

@@ -69,7 +69,16 @@ namespace DataAccessLibrary.Models {
         }
 
         protected bool Equals(FlightPlan other) {
-            return this.Id == other.Id && this.Passengers == other.Passengers && this.CompanyName == other.CompanyName && this.InitialLocation.Equals(other.InitialLocation) && this.Segments.Equals(other.Segments);
+            if (this.Segments.Count == other.Segments.Count) {
+                for (int i = 0; i < this.Segments.Count; i++) {
+                    if (!this.Segments.ElementAt(i).Equals(other.Segments.ElementAt(i))) {
+                        return false;
+                    }
+                }
+                return this.Passengers == other.Passengers && this.CompanyName == other.CompanyName && this.InitialLocation.Equals(other.InitialLocation);
+            }
+
+            return false;
         }
 
         /// <inheritdoc />

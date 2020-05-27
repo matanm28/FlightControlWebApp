@@ -12,7 +12,7 @@ namespace DataAccessLibrary.Models {
         [JsonProperty("ServerId")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        [DisplayName("External Server URL")]
+        [DisplayName("External Servers URL")]
         [Required(ErrorMessage = "A URL is required")]
         [MaxLength(1024)]
         [JsonProperty("ServerURL")]

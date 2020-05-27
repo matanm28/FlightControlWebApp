@@ -84,7 +84,7 @@ namespace DataAccessLibrary.Migrations
                     b.ToTable("Segmentses");
                 });
 
-            modelBuilder.Entity("DataAccessLibrary.Models.Server", b =>
+            modelBuilder.Entity("DataAccessLibrary.Models.Servers", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -97,7 +97,7 @@ namespace DataAccessLibrary.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ApiServer");
+                    b.ToTable("Servers");
                 });
 
             modelBuilder.Entity("DataAccessLibrary.Models.FlightPlan", b =>

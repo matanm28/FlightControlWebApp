@@ -11,11 +11,11 @@
 
         public int Id { get; set; }
         [Required]
-        [Range(-180.000001, 180)]
+        [Range(-180.000001, 180, ErrorMessage = "{0} value must be between {1} to {2}")]
 
         public double Longitude { get; set; }
         [Required]
-        [Range(-90.000001, 90)]
+        [Range(-90.000001, 90, ErrorMessage = "{0} value must be between {1} to {2}")]
         public double Latitude { get; set; }
         [Required]
         [JsonProperty("date_time")]

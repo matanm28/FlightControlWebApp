@@ -58,7 +58,7 @@ namespace FlightControlWeb.Controllers {
             flightPlansId.Add(id);
             using (HttpClient client = this.httpClientFactory.CreateClient()) {
                 // var result = await client.GetAsync("https://"+this.Request.Host.Value + "/api/servers");
-                // IEnumerable<Server> serversList = JsonConvert.DeserializeObject<IEnumerable<Server>>(await result.Content.ReadAsStringAsync());
+                // IEnumerable<Servers> serversList = JsonConvert.DeserializeObject<IEnumerable<Servers>>(await result.Content.ReadAsStringAsync());
                 foreach (Server server in serversList) {
                     try {
                         var response = await client.GetAsync($"{server.URL}/api/FlightPlan/{id}");
@@ -136,15 +136,15 @@ namespace FlightControlWeb.Controllers {
         private static string GenerateFlightId(FlightPlan flightPlan) {
             StringBuilder sb = new StringBuilder();
             int mod = ModNumber;
-            int length = flightPlan.CompanyName.Length;
+            string trimmedCompanyName = flightPlan.CompanyName.Replace(" ", "");
+            int length = trimmedCompanyName.Length;
             if (length < 5) {
                 for (int i = 0; i < 5 - length; i++) {
                     mod *= 10;
                 }
-
-                sb.Append(flightPlan.CompanyName.Substring(0, length));
+                sb.Append(trimmedCompanyName.Substring(0, length));
             } else {
-                sb.Append(flightPlan.CompanyName.Substring(0, 5));
+                sb.Append(trimmedCompanyName.Substring(0, 5));
             }
 
             // var key = BitConverter.ToUInt64(hashedValue) % mod;

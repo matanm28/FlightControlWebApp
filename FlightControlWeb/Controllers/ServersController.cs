@@ -25,14 +25,14 @@ namespace FlightControlWeb.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Server>>> GetApiServer()
         {
-            return await _context.ApiServer.ToListAsync();
+            return await _context.Servers.ToListAsync();
         }
 
         // GET: api/ApiServers/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Server>> GetApiServer(int id)
         {
-            var apiServer = await _context.ApiServer.FindAsync(id);
+            var apiServer = await _context.Servers.FindAsync(id);
 
             if (apiServer == null)
             {
@@ -48,7 +48,7 @@ namespace FlightControlWeb.Controllers
         [HttpPost]
         public async Task<ActionResult<Server>> PostApiServer(Server server)
         {
-            _context.ApiServer.Add(server);
+            _context.Servers.Add(server);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetApiServer", new { id = server.Id }, server);
@@ -58,13 +58,13 @@ namespace FlightControlWeb.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Server>> DeleteApiServer(int id)
         {
-            var apiServer = await _context.ApiServer.FindAsync(id);
+            var apiServer = await _context.Servers.FindAsync(id);
             if (apiServer == null)
             {
                 return NotFound();
             }
 
-            _context.ApiServer.Remove(apiServer);
+            _context.Servers.Remove(apiServer);
             await _context.SaveChangesAsync();
 
             return apiServer;
@@ -72,7 +72,7 @@ namespace FlightControlWeb.Controllers
 
         private bool ApiServerExists(int id)
         {
-            return _context.ApiServer.Any(e => e.Id == id);
+            return _context.Servers.Any(e => e.Id == id);
         }
     }
 }
