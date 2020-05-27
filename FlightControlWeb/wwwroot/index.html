@@ -1,6 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
+import {compareAsc, format} from 'date-fns'
     <meta charset="utf-8" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
@@ -15,6 +16,8 @@
     <script type="text/javascript">
         var markerDict = {};
         var lastRow = "";
+        var UpdateTime;
+        var i = 1;
         $(document).ready(function () {
 
             //getFlights();
@@ -43,54 +46,143 @@
             });
         }
 
-        function getFlights(datetime) {
-            var relativeTime = datetime + ":00Z";
+        function startSession(relativeTo) {
+            //save start date
+            relativeTo = relativeTo + ":00Z";
+            var start = new Date(relativeTo);
+            UpdateTime = start.getTime();
+            //delete all former flights
+            initialTablesAndMarkers();
+            //every 3 sec do:
+            setInterval(function () {
+                //update time
+                var currentTime = new Date();
+                currentTime.setTime(UpdateTime);
+                var relativeTo = Date.UTC(currentTime.getUTCFullYear(),
+                    currentTime.getUTCMonth(),
+                    currentTime.getUTCDate(),
+                    currentTime.getUTCHours(),
+                    currentTime.getUTCMinutes(),
+                    currentTime.getUTCSeconds());
+                //get all relative flights
+                getFlights(new Date(relativeTo).toISOString());
+                UpdateTime = UpdateTime + 3000;
+            },
+                3000);
+
+        }
+
+        function getFlights(relativeTime) {
+            //todo: delete next line
+            //if (i == 1) {
+            //    var relativeTime = datetime + ":00Z";
+            //}
+            //else {
+            //    var relativeTime = datetime + ":59Z";
+            //}
+            i++;
             $.ajax({
                 type: "GET",
                 url: "api/Flights?relative_to=" + relativeTime + "&sync_all",
-                success: addToTable,
+                success: addToTableAndMap,
                 error: function () {
                     alert("Failed getting flights");
                 }
             });
         }
 
-        function addToTable(flights) {
-            //delete all former flights
-            initialTablesAndMarkers();
+
+        function addToTableAndMap(flights) {
             flights.forEach(function (flight) {
-                addToMap(flight);
-                if (!flight.is_external) {
-                    $('#my_flights').append('<tr id=' + flight.flight_id +' onclick="popupFlightDetails(id)"><td>' +
-                        flight.flight_id +
-                        '</td><td>' +
-                        flight.company_name +
-                        '</td><td><a class="delete" title="Delete" data-toggle="tooltip" style="color: black" onclick="deleteFlight(this)"><i class="fas fa-trash"></i></a></td>');
+                var table = $('#my_flights');
+                var row = document.getElementById(flight.flight_id);
+                //if the flight is already in Table
+                if (row != null) {
+                    //update position marker
+                    markerDict[flight.flight_id].setLatLng([flight.latitude, flight.longitude]);
                 } else {
-                    $('#external_flights').append('<tr><td>' + flight.flight_Id + '</td><td>' + flight.company_name);
+                    //add the marker
+                    addMarkerToMap(flight);
+                    //add the row
+                    addRowToTable(flight);
                 }
             });
+            //if there are flights in table and map that finished
+            for (var id in markerDict) {
+                var removeFlight = true;
+                //checks if the current flight supposed to be removed
+                for (i = 0; i < flights.length; i++) {
+                    var currentFlightId = flights[i].flight_id;
+                    if (currentFlightId == id) {
+                        removeFlight = false;
+                        break;
+                    }
+                }
+                if (removeFlight == true) {
+                    //delete from map
+                    map.removeLayer(markerDict[id]);
+                    //delete from table
+                    var row = document.getElementById(id);
+                    row.parentNode.removeChild(row);
+                    //delete from dict
+                    delete markerDict[id];
+                }
+            }
+        }
+
+        function addRowToTable(flight) {
+            if (!flight.is_external) {
+                $('#my_flights').append('<tr id=' +
+                    flight.flight_id +
+                    ' onclick="popupFlightDetails(id)"><td>' +
+                    flight.flight_id +
+                    '</td><td>' +
+                    flight.company_name +
+                    '</td><td><a class="delete" title="Delete" data-toggle="tooltip" style="color: black" onclick="deleteFlight(this)"><i class="fas fa-trash"></i></a></td>');
+            } else {
+                $('#external_flights').append('<tr><td>' + flight.flight_Id + '</td><td>' + flight.company_name);
+            }
+        }
+
+        function addMarkerToMap(flight) {
+            var plainIcon = L.icon({
+                iconUrl: 'custom-plane-icon.png',
+                iconSize: [46, 20],
+                iconAnchor: [23, 10],
+                popupAnchor: [0, -10]
+            });
+            var marker = L.marker([flight.latitude, flight.longitude], { icon: plainIcon });
+            marker.on("click", prePopupFlightDetails);
+            marker.addTo(map);
+            marker.bindPopup(
+                "<b><strong>Flight Details<br>flight id:</strong> " +
+                flight.flight_id +
+                "<br><strong>passengers:</strong> " +
+                flight.passengers +
+                "<br><strong>company name:</strong> " +
+                flight.company_name +
+                "<br><strong>date time:</strong> " +
+                flight.date_time +
+                "<br><strong>is external:</strong> " +
+                flight.is_external +
+                "</b>",
+                {
+                    closeButton: false
+
+                });
+            markerDict[flight.flight_id] = marker;
         }
 
         function popupFlightDetails(id) {
             var row = document.getElementById(id);
             var marker = markerDict[id];
-            var popUp = marker.getPopup();
-           //if (row.style.background == white) {
-           //    row.style.background = visible;
-           //} else {
-           //    row.style.background = white;
-           //}
             if (lastRow != "" && lastRow != row) {
                 $(lastRow).css('background', '');
             }
             if (row.style.background == "" || row.style.background == "white") {
                 $(row).css('background', 'blue');
-                //popUp.openOn(map);
-            }
-            else {
+            } else {
                 $(row).css('background', '');
-
             }
             lastRow = row;
             marker.togglePopup();
@@ -108,31 +200,6 @@
             for (var id in markerDict) {
                 map.removeLayer(markerDict[id]);
             }
-        }
-
-        function addToMap(flight) {
-            var plainIcon = L.icon({
-                iconUrl: 'custom-plane-icon.png',
-                iconSize: [46, 20],
-                iconAnchor: [23, 10],
-                popupAnchor: [0, -10]
-            });
-            var marker = L.marker([flight.latitude, flight.longitude], { icon: plainIcon });
-            marker.on("click", prePopupFlightDetails);
-            marker.addTo(map);
-            var popUp = marker.getPopup();
-            popUp.CloseButton = false;
-            //marker.bindPopup(flight.flight_id);
-            marker.bindPopup(
-                "<b><strong>Flight Details<br>flight id:</strong> " +
-                flight.flight_id +
-                "<br><strong>passengers:</strong> " +
-                flight.passengers +
-                "<br><strong>company name:</strong> " + flight.company_name +
-                "<br><strong>date time:</strong> " + flight.date_time + "<br><strong>is external:</strong> " +
-                flight.is_external +
-                "</b>");
-            markerDict[flight.flight_id] = marker;
         }
 
         function getKeyByValue(dict, value) {
@@ -178,7 +245,7 @@
             <div>
                 <label for="datetime">Enter relative date and time flights:</label>
                 <input type="datetime-local" id="datetime" name="datetime">
-                <input type="submit" onclick="getFlights(datetime.value)">
+                <input type="submit" onclick="startSession(datetime.value)">
             </div>
         </div>
 </div>
