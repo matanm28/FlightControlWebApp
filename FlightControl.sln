@@ -7,12 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlightControlWeb", "FlightC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccessLibrary", "DataAccessLibrary\DataAccessLibrary.csproj", "{CB1EC08E-FD3F-4A52-BAB5-A8A51D275009}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A9F965F6-B20E-45B8-98FA-09DA3A91B7EF}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccessLibrary.Tests", "DataAccessLibrary.Tests\DataAccessLibrary.Tests.csproj", "{CBC7E304-A47B-4FA2-8B09-C1F64B318FB8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccessLibrary.Tests", "DataAccessLibrary.Tests\DataAccessLibrary.Tests.csproj", "{CBC7E304-A47B-4FA2-8B09-C1F64B318FB8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

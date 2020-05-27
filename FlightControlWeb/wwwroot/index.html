@@ -71,6 +71,7 @@
         }
 
         function popupFlightDetails(id) {
+            alert("in here");
             var marker = markerDict[id];
             marker.togglePopup();
         }
@@ -96,7 +97,9 @@
                 iconAnchor: [23, 10],
                 popupAnchor: [0, -10]
             });
-            var marker = L.marker([flight.latitude, flight.longitude], { icon: plainIcon }).addTo(map);
+            var marker = L.marker([flight.latitude, flight.longitude], { icon: plainIcon });
+            marker.on("click", prePopupFlightDetails);
+            marker.addTo(map);
             //marker.bindPopup(flight.flight_id);
             marker.bindPopup(
                 "<b><strong>Flight Details<br>flight id:</strong> " +
@@ -108,6 +111,17 @@
                 flight.is_external +
                 "</b>");
             markerDict[flight.flight_id] = marker;
+        }
+
+        function getKeyByValue(dict, value) {
+            return Object.keys(dict).find(key => dict[key] == value);
+
+        }
+
+        function prePopupFlightDetails(e) {
+            var id = getKeyByValue(markerDict, e.sourceTarget.dragging._marker);
+            popupFlightDetails(id);
+            e.sourceTarget.dragging._marker.togglePopup();
         }
 
     </script>

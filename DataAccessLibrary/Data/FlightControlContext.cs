@@ -8,14 +8,16 @@ namespace DataAccessLibrary.Data {
 
     public class FlightControlContext : DbContext {
         public DbSet<FlightPlan> FlightPlans { get; set; }
-        public DbSet<Flight> Flights { get; set; }
         public DbSet<Location> Locations { get; set; }
         public DbSet<Segment> Segmentses { get; set; }
         public DbSet<Server> ApiServer { get; set; }
 
+
         /// <inheritdoc />
         public FlightControlContext(DbContextOptions options)
-                : base(options) { }
+                : base(options) {
+            
+        }
 
     }
 }

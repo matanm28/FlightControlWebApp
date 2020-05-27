@@ -1,0 +1,26 @@
+{
+  "passengers": 248,
+  "company_name": "Omatom Fly",
+  "initial_location": {
+    "longitude": -93.24,
+    "latitude": 17.24,
+    "date_time": "2020-05-26T18:08:33Z"
+  },
+  "segments": [
+    {
+      "longitude": -170.01,
+      "latitude": 80.41,
+      "timespan_seconds": 812
+    },
+    {
+      "longitude": -109.99,
+      "latitude": 86.93,
+      "timespan_seconds": 343
+    },
+    {
+      "longitude": -78.85,
+      "latitude": 76.11,
+      "timespan_seconds": 53
+    }
+  ]
+}

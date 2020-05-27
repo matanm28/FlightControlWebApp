@@ -16,7 +16,33 @@
 
         [JsonIgnore]
         public TimeSpan TimeSpan {
-            get { return new TimeSpan(0,0,0, this.TimeSpanSeconds); }
+            get { return new TimeSpan(0, 0, 0, this.TimeSpanSeconds); }
+        }
+
+        protected bool Equals(Segment other) {
+            return this.Longitude.Equals(other.Longitude) && this.Latitude.Equals(other.Latitude) && this.TimeSpanSeconds == other.TimeSpanSeconds;
+        }
+
+        /// <inheritdoc />
+        public override bool Equals(object? obj) {
+            if (ReferenceEquals(null, obj)) {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj)) {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType()) {
+                return false;
+            }
+
+            return Equals((Segment)obj);
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode() {
+            return HashCode.Combine(this.Longitude, this.Latitude, this.TimeSpanSeconds);
         }
     }
 }

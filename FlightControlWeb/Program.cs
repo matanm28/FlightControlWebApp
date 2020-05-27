@@ -11,6 +11,7 @@ namespace FlightControlWeb
 {
     using System.ComponentModel;
     using System.IO;
+    using Autofac.Extensions.DependencyInjection;
     using DataAccessLibrary.Converters;
     using DataAccessLibrary.Data;
         using DataAccessLibrary.Models;
@@ -23,9 +24,10 @@ namespace FlightControlWeb
                 public static void Main(string[] args)
                 {
 
-                        var host = CreateHostBuilder(args).Build();
+                        var host = CreateHostBuilder(args).UseServiceProviderFactory(new AutofacServiceProviderFactory()).Build();
                         TypeDescriptor.AddAttributes(typeof(DateTime), new TypeConverterAttribute(typeof(UtcDateTimeConverter)));
                         CreateDbIfNotExists(host);
+                        
                         host.Run();
                 }
 
