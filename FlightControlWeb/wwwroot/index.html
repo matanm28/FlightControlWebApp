@@ -73,7 +73,9 @@
         }
 
         function popupFlightDetails(id) {
-           var row = document.getElementById(id);
+            var row = document.getElementById(id);
+            var marker = markerDict[id];
+            var popUp = marker.getPopup();
            //if (row.style.background == white) {
            //    row.style.background = visible;
            //} else {
@@ -84,12 +86,13 @@
             }
             if (row.style.background == "" || row.style.background == "white") {
                 $(row).css('background', 'blue');
-           }
+                //popUp.openOn(map);
+            }
             else {
                 $(row).css('background', '');
+
             }
             lastRow = row;
-            var marker = markerDict[id];
             marker.togglePopup();
         }
 
@@ -117,6 +120,8 @@
             var marker = L.marker([flight.latitude, flight.longitude], { icon: plainIcon });
             marker.on("click", prePopupFlightDetails);
             marker.addTo(map);
+            var popUp = marker.getPopup();
+            popUp.CloseButton = false;
             //marker.bindPopup(flight.flight_id);
             marker.bindPopup(
                 "<b><strong>Flight Details<br>flight id:</strong> " +
@@ -136,7 +141,9 @@
         }
 
         function prePopupFlightDetails(e) {
-            var id = getKeyByValue(markerDict, e.sourceTarget.dragging._marker);
+            var marker = e.sourceTarget.dragging._marker;
+            //gets id
+            var id = getKeyByValue(markerDict, marker);
             popupFlightDetails(id);
             e.sourceTarget.dragging._marker.togglePopup();
         }
