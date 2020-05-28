@@ -1,8 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-import {compareAsc, format} from 'date-fns'
-    <meta charset="utf-8" />
+<meta charset="utf-8" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
@@ -15,9 +14,9 @@ import {compareAsc, format} from 'date-fns'
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
     <script type="text/javascript">
         var markerDict = {};
+        var setIntervalInAction = false;
         var lastRow = "";
         var UpdateTime;
-        var i = 1;
         $(document).ready(function () {
 
             //getFlights();
@@ -35,10 +34,13 @@ import {compareAsc, format} from 'date-fns'
                 type: "DELETE",
                 url: "api/Flights/" + id,
                 success: function () {
-                    //delete from map
+                    //delete from table
                     row.remove();
                     $(".add-new").removeAttr("disabled");
+                    //delete from map
                     map.removeLayer(markerDict[id]);
+                    //delete from dict
+                    delete markerDict[id];
                 },
                 error: function () {
                     alert("failed to delete flight: " + id);
@@ -47,14 +49,19 @@ import {compareAsc, format} from 'date-fns'
         }
 
         function startSession(relativeTo) {
+            var refreshIntervalId;
+            if (setIntervalInAction) {
+                clearInterval(refreshIntervalId);
+            }
+            setIntervalInAction = true;
             //save start date
             relativeTo = relativeTo + ":00Z";
             var start = new Date(relativeTo);
             UpdateTime = start.getTime();
             //delete all former flights
-            initialTablesAndMarkers();
+            //initialTablesAndMarkers();
             //every 3 sec do:
-            setInterval(function () {
+            refreshIntervalId = setInterval(function () {
                 //update time
                 var currentTime = new Date();
                 currentTime.setTime(UpdateTime);
@@ -73,14 +80,6 @@ import {compareAsc, format} from 'date-fns'
         }
 
         function getFlights(relativeTime) {
-            //todo: delete next line
-            //if (i == 1) {
-            //    var relativeTime = datetime + ":00Z";
-            //}
-            //else {
-            //    var relativeTime = datetime + ":59Z";
-            //}
-            i++;
             $.ajax({
                 type: "GET",
                 url: "api/Flights?relative_to=" + relativeTime + "&sync_all",
@@ -118,7 +117,7 @@ import {compareAsc, format} from 'date-fns'
                         break;
                     }
                 }
-                if (removeFlight == true) {
+                if (removeFlight) {
                     //delete from map
                     map.removeLayer(markerDict[id]);
                     //delete from table
@@ -146,7 +145,7 @@ import {compareAsc, format} from 'date-fns'
 
         function addMarkerToMap(flight) {
             var plainIcon = L.icon({
-                iconUrl: 'custom-plane-icon.png',
+                iconUrl: 'custom-black-plane-icon.png',
                 iconSize: [46, 20],
                 iconAnchor: [23, 10],
                 popupAnchor: [0, -10]
@@ -168,7 +167,6 @@ import {compareAsc, format} from 'date-fns'
                 "</b>",
                 {
                     closeButton: false
-
                 });
             markerDict[flight.flight_id] = marker;
         }
@@ -176,6 +174,7 @@ import {compareAsc, format} from 'date-fns'
         function popupFlightDetails(id) {
             var row = document.getElementById(id);
             var marker = markerDict[id];
+            marker.setIcon('custom-plane-icon.png');
             if (lastRow != "" && lastRow != row) {
                 $(lastRow).css('background', '');
             }
@@ -199,12 +198,12 @@ import {compareAsc, format} from 'date-fns'
             }
             for (var id in markerDict) {
                 map.removeLayer(markerDict[id]);
+                delete markerDict[id];
             }
         }
 
         function getKeyByValue(dict, value) {
             return Object.keys(dict).find(key => dict[key] == value);
-
         }
 
         function prePopupFlightDetails(e) {
