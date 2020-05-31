@@ -19,6 +19,8 @@
         var refreshIntervalId = 0;
         var lastRow = "";
         var lastMarker;
+        var lastPolyLine;
+        var polyline;
         var UpdateTime;
         //icons
         var blackPlaneIcon = L.Icon.extend({
@@ -40,13 +42,7 @@
         var blackAirplaneIcon = new blackPlaneIcon();
         var markedAirplaneIcon = new planeIcon();
         $(document).ready(function () {
-
-            //getFlights();
-            // Delete row on delete button click
-            //$(document).on("click",
-            //    ".delete",
-            //    deleteFlight());
-
+            
         });
 
         function deleteFlight(x) {
@@ -123,9 +119,9 @@
                     $.ajax({
                         type: "GET",
                         url: "api/FlightPlan/" + flight.flight_id,
-                        async: false,
+                        //async: false,
                         success: function(flightPlan) {
-                            check(flight, flightPlan);
+                            addMarkerToMap(flight, flightPlan);
                         },
                         error: function () {
                             alert("Failed getting flight plan");
@@ -181,11 +177,21 @@
         }
 
         function addMarkerToMap(flight, flightPlan) {
-            let check = flightPlan.initial_location;
+            //create plane path
+            var endLocation = flightPlan.initial_location;
+            var list = [];
+            for (let i = 0; i < flightPlan.segments.length; i++) {
+                let latitude = flightPlan.segments[i].latitude;
+                let longitude = flightPlan.segments[i].longitude;
+                list.push([latitude, longitude]);
+                endLocation = [latitude, longitude];
+            }
+            //create marker
             var marker = L.marker([flight.latitude, flight.longitude]);
             marker.setIcon(blackAirplaneIcon);
             marker.on("click", prePopupFlightDetails);
             marker.addTo(map);
+            //create flight details
             marker.bindPopup(
                 "<b><strong>Flight Details<br>flight id:</strong> " +
                 flight.flight_id +
@@ -195,31 +201,45 @@
                 flight.company_name +
                 "<br><strong>date time:</strong> " +
                 flight.date_time +
+                "<br><strong>initial location:</strong> " +
+                flightPlan.initial_location.latitude + "," + flightPlan.initial_location.longitude +
+                "<br><strong>end location:</strong> " +
+                endLocation +
                 "<br><strong>is external:</strong> " +
                 flight.is_external +
                 "</b>",
                 {
                     closeButton: false
                 });
+            //zoom the map to the polyline
+            //map.fitBounds(pathLine.getBounds());
+            //add the marker and his path to dictionaries
             markerDict[flight.flight_id] = marker;
+            planePath[flight.flight_id] = list;
         }
 
         function popupFlightDetails(id) {
             var row = document.getElementById(id);
             var marker = markerDict[id];
+            //var polyline = planePath[id];
             if (lastRow != "" && lastRow != row) {
                 lastMarker.setIcon(blackAirplaneIcon);
                 $(lastRow).css('background', '');
+                map.removeLayer(lastPolyLine);
             }
             if (row.style.background == "" || row.style.background == "white") {
                 marker.setIcon(markedAirplaneIcon);
                 $(row).css('background', 'blue');
+                polyline = L.polyline(planePath[id]).addTo(map);
+                //map.addLayer(polyline);
             } else {
                 marker.setIcon(blackAirplaneIcon);
                 $(row).css('background', '');
+                map.removeLayer(polyline);
             }
             lastMarker = marker;
             lastRow = row;
+            lastPolyLine = polyline;
             marker.togglePopup();
         }
 
@@ -235,6 +255,7 @@
             for (var id in markerDict) {
                 map.removeLayer(markerDict[id]);
                 delete markerDict[id];
+                delete planePath[id];
             }
         }
 
