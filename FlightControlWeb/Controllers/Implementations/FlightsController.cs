@@ -53,7 +53,7 @@
         [HttpDelete("{id}")]
         public async Task<ActionResult<Flight>> DeleteFlight(string id) {
             if (!await this.flightPlansService.ExistsAsync(id)) {
-                return this.NotFound();
+                return this.NotFound($"A flight with id:'{id}' doesn't exists on this server");
             }
 
             var flightPlan = await this.flightPlansService.RemoveAsync(id);

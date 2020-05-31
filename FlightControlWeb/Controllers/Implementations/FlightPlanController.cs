@@ -80,10 +80,10 @@
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<FlightPlan>> PostFlightPlan(FlightPlan flightPlan) {
+        public async Task<ActionResult<FlightPlan>> PostFlightPlan([FromBody] FlightPlan flightPlan) {
             flightPlan.Id = GenerateFlightId(flightPlan);
             if (await this.flightPlansService.ExistsAsync(flightPlan.Id)) {
-                return this.Conflict(flightPlan);
+                return this.Conflict($"A flight plan with same exact data already exists on this server.\nTry using 'api/flights/{{id}}' with '{flightPlan.Id}' as 'id'");
             }
 
             await this.flightPlansService.AddAsync(flightPlan);
