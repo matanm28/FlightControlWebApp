@@ -1,18 +1,26 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8" />
+    <meta charset="utf-8" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.0.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+          integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+          crossorigin="" />
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+            integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+            crossorigin=""></script>
+    <!--drag and drop-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<link rel="stylesheet" href="css/dragAndDropStyle.css">
+<script src="js/dragAndDrop.js" defer></script>
     <script type="text/javascript">
+
         var markerDict = {};
         var planePath = {};
         var setIntervalInAction = false;
@@ -22,7 +30,7 @@
         var lastPolyLine;
         var polyline;
         var UpdateTime;
-        //icons 
+        //icons
         var blackPlaneIcon = L.Icon.extend({
             options: {
                 iconUrl: 'custom-black-plane-icon.png',
@@ -42,7 +50,7 @@
         var blackAirplaneIcon = new blackPlaneIcon();
         var markedAirplaneIcon = new planeIcon();
         $(document).ready(function () {
-            
+
         });
 
         function deleteFlight(x) {
@@ -61,8 +69,8 @@
                     delete markerDict[id];
                     delete planePath[id];
                 },
-                error: function () {
-                    alert("failed to delete flight: " + id);
+                error: function (e) {
+                    alert(e.srcElement.response);
                 }
             });
         }
@@ -88,7 +96,8 @@
                     currentTime.getUTCMinutes(),
                     currentTime.getUTCSeconds());
                 //get all relative flights
-                getFlights(new Date(relativeTo).toISOString());
+                var date = new Date(relativeTo).toISOString();
+                getFlights(date);
                 UpdateTime = UpdateTime + 3000;
             },
                 3000);
@@ -100,8 +109,8 @@
                 type: "GET",
                 url: "api/Flights?relative_to=" + relativeTime + "&sync_all",
                 success: addToTableAndMap,
-                error: function () {
-                    alert("Failed getting flights");
+                error: function (e) {
+                    alert();
                 }
             });
         }
@@ -120,7 +129,7 @@
                         type: "GET",
                         url: "api/FlightPlan/" + flight.flight_id,
                         //async: false,
-                        success: function(flightPlan) {
+                        success: function (flightPlan) {
                             addMarkerToMap(flight, flightPlan);
                         },
                         error: function () {
@@ -180,6 +189,7 @@
             //create plane path
             var endLocation = flightPlan.initial_location;
             var list = [];
+            list.push([endLocation.latitude, endLocation.longitude]);
             for (let i = 0; i < flightPlan.segments.length; i++) {
                 let latitude = flightPlan.segments[i].latitude;
                 let longitude = flightPlan.segments[i].longitude;
@@ -225,7 +235,7 @@
             if (lastRow != "" && lastRow != row) {
                 lastMarker.setIcon(blackAirplaneIcon);
                 $(lastRow).css('background', '');
-                map.removeLayer(lastPolyLine);
+                //map.removeLayer(lastPolyLine);
             }
             if (row.style.background == "" || row.style.background == "white") {
                 marker.setIcon(markedAirplaneIcon);
@@ -235,7 +245,7 @@
             } else {
                 marker.setIcon(blackAirplaneIcon);
                 $(row).css('background', '');
-                map.removeLayer(polyline);
+                //map.removeLayer(polyline);
             }
             lastMarker = marker;
             lastRow = row;
@@ -352,8 +362,14 @@
                 </table>
             </tr>
         </table>
-
     </div>
+</div>
+<div id="drop-area">
+    <form class="my-form">
+        <p>Upload multiple files with the file dialog or by dragging and dropping images onto the dashed region</p>
+        <input type="file" id="fileElem" multiple accept="image/*" onchange="handleFiles(this.files)">
+        <label class="button" for="fileElem">Select some files</label>
+    </form>
 </div>
 
 </body>
