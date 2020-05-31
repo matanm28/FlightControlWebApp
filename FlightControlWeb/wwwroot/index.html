@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8" />
+<meta charset="utf-8" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
@@ -14,7 +14,31 @@
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
     <script type="text/javascript">
         var markerDict = {};
+        var planePath = {};
+        var setIntervalInAction = false;
+        var refreshIntervalId = 0;
         var lastRow = "";
+        var lastMarker;
+        var UpdateTime;
+        //icons
+        var blackPlaneIcon = L.Icon.extend({
+            options: {
+                iconUrl: 'custom-black-plane-icon.png',
+                iconSize: [46, 20],
+                iconAnchor: [23, 10],
+                popupAnchor: [0, -10]
+            }
+        });
+        var planeIcon = L.Icon.extend({
+            options: {
+                iconUrl: 'custom-plane-icon.png',
+                iconSize: [46, 20],
+                iconAnchor: [23, 10],
+                popupAnchor: [0, -10]
+            }
+        });
+        var blackAirplaneIcon = new blackPlaneIcon();
+        var markedAirplaneIcon = new planeIcon();
         $(document).ready(function () {
 
             //getFlights();
@@ -32,10 +56,14 @@
                 type: "DELETE",
                 url: "api/Flights/" + id,
                 success: function () {
-                    //delete from map
+                    //delete from table
                     row.remove();
                     $(".add-new").removeAttr("disabled");
+                    //delete from map
                     map.removeLayer(markerDict[id]);
+                    //delete from dict
+                    delete markerDict[id];
+                    delete planePath[id];
                 },
                 error: function () {
                     alert("failed to delete flight: " + id);
@@ -43,55 +71,154 @@
             });
         }
 
-        function getFlights(datetime) {
-            var relativeTime = datetime + ":00Z";
+        function startSession(relativeTo) {
+            if (setIntervalInAction) {
+                clearInterval(refreshIntervalId);
+            }
+            setIntervalInAction = true;
+            //save start date
+            relativeTo = relativeTo + ":00Z";
+            var start = new Date(relativeTo);
+            UpdateTime = start.getTime();
+            //every 3 sec do:
+            refreshIntervalId = setInterval(function () {
+                //update time
+                var currentTime = new Date();
+                currentTime.setTime(UpdateTime);
+                var relativeTo = Date.UTC(currentTime.getUTCFullYear(),
+                    currentTime.getUTCMonth(),
+                    currentTime.getUTCDate(),
+                    currentTime.getUTCHours(),
+                    currentTime.getUTCMinutes(),
+                    currentTime.getUTCSeconds());
+                //get all relative flights
+                getFlights(new Date(relativeTo).toISOString());
+                UpdateTime = UpdateTime + 3000;
+            },
+                3000);
+
+        }
+
+        function getFlights(relativeTime) {
             $.ajax({
                 type: "GET",
                 url: "api/Flights?relative_to=" + relativeTime + "&sync_all",
-                success: addToTable,
+                success: addToTableAndMap,
                 error: function () {
                     alert("Failed getting flights");
                 }
             });
         }
 
-        function addToTable(flights) {
-            //delete all former flights
-            initialTablesAndMarkers();
+
+        function addToTableAndMap(flights) {
             flights.forEach(function (flight) {
-                addToMap(flight);
-                if (!flight.is_external) {
-                    $('#my_flights').append('<tr id=' + flight.flight_id +' onclick="popupFlightDetails(id)"><td>' +
-                        flight.flight_id +
-                        '</td><td>' +
-                        flight.company_name +
-                        '</td><td><a class="delete" title="Delete" data-toggle="tooltip" style="color: black" onclick="deleteFlight(this)"><i class="fas fa-trash"></i></a></td>');
+                var table = $('#my_flights');
+                var row = document.getElementById(flight.flight_id);
+                //if the flight is already in Table
+                if (row != null) {
+                    //update position marker
+                    markerDict[flight.flight_id].setLatLng([flight.latitude, flight.longitude]);
                 } else {
-                    $('#external_flights').append('<tr><td>' + flight.flight_Id + '</td><td>' + flight.company_name);
+                    $.ajax({
+                        type: "GET",
+                        url: "api/FlightPlan/" + flight.flight_id,
+                        async: false,
+                        success: function(flightPlan) {
+                            check(flight, flightPlan);
+                        },
+                        error: function () {
+                            alert("Failed getting flight plan");
+                        }
+                    });
+                    //add the marker
+                    //addMarkerToMap(flight);
+                    //add the row
+                    addRowToTable(flight);
                 }
             });
+            //if there are flights in table and map that finished
+            for (var id in markerDict) {
+                var removeFlight = true;
+                //checks if the current flight supposed to be removed
+                for (i = 0; i < flights.length; i++) {
+                    var currentFlightId = flights[i].flight_id;
+                    if (currentFlightId == id) {
+                        removeFlight = false;
+                        break;
+                    }
+                }
+                if (removeFlight) {
+                    //delete from map
+                    map.removeLayer(markerDict[id]);
+                    //delete from table
+                    var row = document.getElementById(id);
+                    row.parentNode.removeChild(row);
+                    //delete from dict
+                    delete markerDict[id];
+                    delete planePath[id];
+
+                }
+            }
+        }
+
+        function addRowToTable(flight) {
+            if (!flight.is_external) {
+                $('#my_flights').append('<tr id=' +
+                    flight.flight_id +
+                    ' onclick="popupFlightDetails(id)"><td>' +
+                    flight.flight_id +
+                    '</td><td>' +
+                    flight.company_name +
+                    '</td><td><a class="delete" title="Delete" data-toggle="tooltip" style="color: black" onclick="deleteFlight(this)"><i class="fas fa-trash"></i></a></td>');
+            } else {
+                $('#external_flights').append('<tr><td>' + flight.flight_Id + '</td><td>' + flight.company_name);
+            }
+        }
+
+        function check(flight, flightPlan) {
+            let check = flightPlan.initial_location;
+        }
+
+        function addMarkerToMap(flight, flightPlan) {
+            let check = flightPlan.initial_location;
+            var marker = L.marker([flight.latitude, flight.longitude]);
+            marker.setIcon(blackAirplaneIcon);
+            marker.on("click", prePopupFlightDetails);
+            marker.addTo(map);
+            marker.bindPopup(
+                "<b><strong>Flight Details<br>flight id:</strong> " +
+                flight.flight_id +
+                "<br><strong>passengers:</strong> " +
+                flight.passengers +
+                "<br><strong>company name:</strong> " +
+                flight.company_name +
+                "<br><strong>date time:</strong> " +
+                flight.date_time +
+                "<br><strong>is external:</strong> " +
+                flight.is_external +
+                "</b>",
+                {
+                    closeButton: false
+                });
+            markerDict[flight.flight_id] = marker;
         }
 
         function popupFlightDetails(id) {
             var row = document.getElementById(id);
             var marker = markerDict[id];
-            var popUp = marker.getPopup();
-           //if (row.style.background == white) {
-           //    row.style.background = visible;
-           //} else {
-           //    row.style.background = white;
-           //}
             if (lastRow != "" && lastRow != row) {
+                lastMarker.setIcon(blackAirplaneIcon);
                 $(lastRow).css('background', '');
             }
             if (row.style.background == "" || row.style.background == "white") {
+                marker.setIcon(markedAirplaneIcon);
                 $(row).css('background', 'blue');
-                //popUp.openOn(map);
-            }
-            else {
+            } else {
+                marker.setIcon(blackAirplaneIcon);
                 $(row).css('background', '');
-
             }
+            lastMarker = marker;
             lastRow = row;
             marker.togglePopup();
         }
@@ -107,37 +234,12 @@
             }
             for (var id in markerDict) {
                 map.removeLayer(markerDict[id]);
+                delete markerDict[id];
             }
-        }
-
-        function addToMap(flight) {
-            var plainIcon = L.icon({
-                iconUrl: 'custom-plane-icon.png',
-                iconSize: [46, 20],
-                iconAnchor: [23, 10],
-                popupAnchor: [0, -10]
-            });
-            var marker = L.marker([flight.latitude, flight.longitude], { icon: plainIcon });
-            marker.on("click", prePopupFlightDetails);
-            marker.addTo(map);
-            var popUp = marker.getPopup();
-            popUp.CloseButton = false;
-            //marker.bindPopup(flight.flight_id);
-            marker.bindPopup(
-                "<b><strong>Flight Details<br>flight id:</strong> " +
-                flight.flight_id +
-                "<br><strong>passengers:</strong> " +
-                flight.passengers +
-                "<br><strong>company name:</strong> " + flight.company_name +
-                "<br><strong>date time:</strong> " + flight.date_time + "<br><strong>is external:</strong> " +
-                flight.is_external +
-                "</b>");
-            markerDict[flight.flight_id] = marker;
         }
 
         function getKeyByValue(dict, value) {
             return Object.keys(dict).find(key => dict[key] == value);
-
         }
 
         function prePopupFlightDetails(e) {
@@ -178,7 +280,7 @@
             <div>
                 <label for="datetime">Enter relative date and time flights:</label>
                 <input type="datetime-local" id="datetime" name="datetime">
-                <input type="submit" onclick="getFlights(datetime.value)">
+                <input type="submit" onclick="startSession(datetime.value)">
             </div>
         </div>
 </div>
@@ -186,7 +288,7 @@
     <div id="map" class="col-7">
         <script>
             //crate map 51.505, -0.09
-            var map = L.map('map').setView([0, 0], 2);
+            var map = L.map('map', {closePopupOnClick: false}).setView([0, 0], 2);
             L.tileLayer('https://api.maptiler.com/maps/basic-4326/256/{z}/{x}/{y}.png?key=kUaqUXbYZJZLOhn9aaIH',
                 {
                     attribution:
