@@ -15,8 +15,6 @@
 
     public class FlightPlansService : IFlightPlansService {
         private readonly FlightControlContext dbContext;
-        private DbSet<FlightPlan> flightPlansDbSet;
-        private DbSet<FlightPlan> flightPlansDbSet1;
 
         public FlightPlansService(FlightControlContext dbContext) {
             this.dbContext = dbContext;
@@ -51,7 +49,7 @@
         }
 
         /// <inheritdoc />
-        public Task<FlightPlan?> FindAsync(string id) {
+        public Task<FlightPlan> FindAsync(string id) {
             if (id == null) {
                 return Task.FromResult<FlightPlan>(null);
             }
@@ -80,7 +78,7 @@
         }
 
         /// <inheritdoc />
-        public async Task<FlightPlan?> RemoveAsync(string id) {
+        public async Task<FlightPlan> RemoveAsync(string id) {
             FlightPlan flightPlan = await this.FindAsync(id);
             if (flightPlan == null) {
                 return null;
@@ -90,7 +88,7 @@
         }
 
         /// <inheritdoc />
-        public async Task<FlightPlan?> RemoveAsync(FlightPlan element) {
+        public async Task<FlightPlan> RemoveAsync(FlightPlan element) {
             if (element.Id != null) {
                 return await this.RemoveAsync(element.Id);
             }

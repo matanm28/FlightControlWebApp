@@ -1,4 +1,4 @@
-﻿namespace FlightControlWeb.Controllers {
+﻿namespace FlightControlWeb.Controllers.Interfaces {
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
@@ -12,6 +12,6 @@
 
         Task<ActionResult<Flight>> DeleteFlight(string id);
 
-        Task<ActionResult<IEnumerable<Flight>>> GetFlightsRelativeTo([FromQuery] DateTime relative_to);
+        Task<ActionResult<IEnumerable<Flight>>> GetFlightsRelativeTo([FromQuery] DateTime relativeTo);
     }
 }

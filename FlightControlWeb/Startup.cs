@@ -4,20 +4,22 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-
 namespace FlightControlWeb {
-    using System.Net.Http;
+    using System;
     using System.Reflection;
     using Autofac;
     using Autofac.Integration.WebApi;
     using DataAccessLibrary.Data;
     using DataAccessLibrary.DataAccess.Implementations;
     using DataAccessLibrary.DataAccess.Interfaces;
-    using FlightControlWeb.Controllers;
+    
+    using FlightControlWeb.Controllers.Implementations;
+    using FlightControlWeb.Controllers.Interfaces;
     using Microsoft.EntityFrameworkCore;
     using Newtonsoft.Json;
 
     public class Startup {
+        private const int SecondsToTimeOut = 5;
         public Startup(IConfiguration configuration) {
             Configuration = configuration;
         }
@@ -28,15 +30,20 @@ namespace FlightControlWeb {
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
-            services.AddDbContext<FlightControlContext>(options => {
-                                                            options.UseSqlite(Configuration.GetConnectionString("FlightControlDB"));
-                                                        });
-            
-            services.AddControllers().AddNewtonsoftJson(options => {
-                                                            options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
-                                                            options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
-                                                        });
-            services.AddHttpClient();
+            services.AddDbContext<FlightControlContext>(
+                    options => {
+                        options.UseSqlite(Configuration.GetConnectionString("FlightControlDB"));
+                    });
+
+            services.AddControllers().AddNewtonsoftJson(
+                    options => {
+                        options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+                        options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
+                    });
+            services.AddHttpClient(nameof(IServerService),
+                    client => {
+                        client.Timeout = TimeSpan.FromSeconds(SecondsToTimeOut);
+                    });
             services.AddMvc().AddControllersAsServices();
         }
 

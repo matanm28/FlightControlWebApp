@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using DataAccessLibrary.Data;
-using DataAccessLibrary.Models;
-
-namespace FlightControlWeb.Controllers
+﻿namespace FlightControlWeb.Controllers.Implementations
 {
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
     using DataAccessLibrary.DataAccess.Interfaces;
+    using DataAccessLibrary.Models;
+    using FlightControlWeb.Controllers.Interfaces;
+    using Microsoft.AspNetCore.Mvc;
 
     [Route("api/[controller]")]
     [ApiController]
@@ -36,10 +31,10 @@ namespace FlightControlWeb.Controllers
             var apiServer = await this.serverService.FindAsync(id);
             if (apiServer == null)
             {
-                return NotFound();
+                return this.NotFound();
             }
 
-            return Ok(apiServer);
+            return this.Ok(apiServer);
         }
 
         // POST: api/ApiServers
@@ -50,7 +45,7 @@ namespace FlightControlWeb.Controllers
         {
             await this.serverService.AddAsync(server);
 
-            return CreatedAtAction("GetApiServer", new { id = server.Id }, server);
+            return this.CreatedAtAction("GetApiServer", new { id = server.Id }, server);
         }
 
         // DELETE: api/ApiServers/5
@@ -60,7 +55,7 @@ namespace FlightControlWeb.Controllers
             var apiServer = await this.serverService.RemoveAsync(id);
             if (apiServer == null)
             {
-                return NotFound();
+                return this.NotFound();
             }
 
             await this.serverService.SaveChangesAsync();

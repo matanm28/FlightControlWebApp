@@ -34,7 +34,7 @@
         }
 
         /// <inheritdoc />
-        public async Task<Server?> FindAsync(int id) {
+        public async Task<Server> FindAsync(int id) {
             return await this.dbContext.Servers.FindAsync(id);
         }
 
@@ -58,7 +58,7 @@
         }
 
         /// <inheritdoc />
-        public async Task<Server?> RemoveAsync(Server element) {
+        public async Task<Server> RemoveAsync(Server element) {
             if (element != null) {
                 Server server = this.dbContext.Servers.Remove(element).Entity;
                 if (server.Equals(element)) {
@@ -70,7 +70,7 @@
         }
 
         /// <inheritdoc />
-        public async Task<Server?> RemoveAsync(int id) {
+        public async Task<Server> RemoveAsync(int id) {
             Server server = await this.dbContext.Servers.FindAsync(id);
             if (server == null) {
                 return null;

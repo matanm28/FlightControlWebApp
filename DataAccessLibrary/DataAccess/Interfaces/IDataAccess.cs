@@ -13,7 +13,7 @@
 
         Task<List<T>> GetAllAsync([NotNull] Expression<Func<T, bool>> predicate);
 
-        Task<T?> FindAsync(S id);
+        Task<T> FindAsync(S id);
 
         Task<bool> ExistsAsync(S id);
 
@@ -21,9 +21,9 @@
 
         Task<int> SaveChangesAsync();
 
-        Task<T?> RemoveAsync(T element);
+        Task<T> RemoveAsync(T element);
 
-        Task<T?> RemoveAsync(S id);
+        Task<T> RemoveAsync(S id);
 
         Task<EntityEntry<T>> AddAsync(T element);
 

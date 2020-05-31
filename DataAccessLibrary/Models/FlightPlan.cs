@@ -3,19 +3,12 @@ using System.Text;
 
 namespace DataAccessLibrary.Models {
     using System;
-    using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
-    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Security.Cryptography;
-    using System.Threading.Tasks;
-    using DataAccessLibrary.Converters;
-    using MathNet.Numerics;
-    using MathNet.Numerics.Interpolation;
     using Newtonsoft.Json;
 
-    
     public class FlightPlan {
         [Key]
         [JsonIgnore]
@@ -60,10 +53,10 @@ namespace DataAccessLibrary.Models {
                     segmentsTotalSeconds += segment.TimeSpan.TotalSeconds;
                 }
 
-                var hashValue = hashFunction.ComputeHash(Encoding.UTF8.GetBytes(this.CompanyName + this.Passengers
-                                                                                                 + this.InitialLocation.Longitude + this.InitialLocation.Latitude
-                                                                                                 + this.InitialLocation.DateTime.ToString() + segmentsTotalSeconds
-                                                                                                 + segmentsLatitudeLongitudeSum));
+                var hashValue = hashFunction.ComputeHash(
+                        Encoding.UTF8.GetBytes(
+                                this.CompanyName + this.Passengers + this.InitialLocation.Longitude + this.InitialLocation.Latitude
+                                + this.InitialLocation.DateTime.ToString() + segmentsTotalSeconds + segmentsLatitudeLongitudeSum));
                 return BitConverter.ToInt32(hashValue);
             }
         }
@@ -75,6 +68,7 @@ namespace DataAccessLibrary.Models {
                         return false;
                     }
                 }
+
                 return this.Passengers == other.Passengers && this.CompanyName == other.CompanyName && this.InitialLocation.Equals(other.InitialLocation);
             }
 

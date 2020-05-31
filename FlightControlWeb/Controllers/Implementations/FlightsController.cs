@@ -1,26 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DataAccessLibrary.Data;
-using DataAccessLibrary.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-
-namespace FlightControlWeb.Controllers {
-    using System.Collections;
-    using System.ComponentModel;
-    using System.IO;
+﻿namespace FlightControlWeb.Controllers.Implementations {
+    using System;
+    using System.Collections.Generic;
     using System.Net.Http;
-    using System.Security.Cryptography;
-    using System.Security.Policy;
-    using System.Text;
-    using System.Threading;
-    using DataAccessLibrary.Converters;
+    using System.Threading.Tasks;
     using DataAccessLibrary.DataAccess.Enums;
     using DataAccessLibrary.DataAccess.Interfaces;
-    using Microsoft.AspNetCore.Mvc.ModelBinding;
+    using DataAccessLibrary.Models;
+    using FlightControlWeb.Controllers.Interfaces;
+    using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
 
     [Route("api/[controller]")]
@@ -28,11 +15,13 @@ namespace FlightControlWeb.Controllers {
     public class FlightsController : ControllerBase, IFlightsController {
         private readonly IFlightPlansService flightPlansService;
         private readonly IServerService serverService;
+        private readonly IHttpClientFactory httpClientFactory;
 
         /// <inheritdoc />
-        public FlightsController(IFlightPlansService flightPlansService, IServerService serverService) {
+        public FlightsController(IFlightPlansService flightPlansService, IServerService serverService,IHttpClientFactory httpClientFactory) {
             this.flightPlansService = flightPlansService;
             this.serverService = serverService;
+            this.httpClientFactory = httpClientFactory;
         }
 
         // GET: api/Flights
@@ -46,7 +35,7 @@ namespace FlightControlWeb.Controllers {
                 }
             }
 
-            return Ok(flights);
+            return this.Ok(flights);
         }
 
         // GET: api/Flights/5
@@ -54,55 +43,55 @@ namespace FlightControlWeb.Controllers {
         public async Task<ActionResult<Flight>> GetFlight(string id) {
             var flightPlan = await this.flightPlansService.FindAsync(id);
             if (flightPlan == null) {
-                return NotFound();
+                return this.NotFound();
             }
 
-            return Ok(new Flight(flightPlan));
+            return this.Ok(new Flight(flightPlan));
         }
 
         // DELETE: api/Flights/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<Flight>> DeleteFlight(string id) {
             if (!await this.flightPlansService.ExistsAsync(id)) {
-                return NotFound();
+                return this.NotFound();
             }
 
             var flightPlan = await this.flightPlansService.RemoveAsync(id);
             await this.flightPlansService.SaveChangesAsync();
 
-            return Ok(new Flight(flightPlan));
+            return this.Ok(new Flight(flightPlan));
         }
 
-        // GET: api/Flights?relative_to=<DateTime>&sync_all
+        // GET: api/Flights?relativeTo=<DateTime>&sync_all
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Flight>>> GetFlightsRelativeTo([FromQuery] DateTime relative_to) {
-            if (relative_to.Kind != DateTimeKind.Utc) {
-                return BadRequest($"requset:\"{this.Request}\"\nstatus:\"failed\"\nreason:\"relative_to format must be yyyy-MM-ddTHH:mm:ssZ (UTC time)\"");
+        public async Task<ActionResult<IEnumerable<Flight>>> GetFlightsRelativeTo([FromQuery(Name = "relativeTo")] DateTime relativeTo) {
+            if (relativeTo.Kind != DateTimeKind.Utc) {
+                return this.BadRequest($"requset:\"{this.Request}\"\nstatus:\"failed\"\nreason:\"relativeTo format must be yyyy-MM-ddTHH:mm:ssZ (UTC time)\"");
             }
 
-            var flightPlansList = await this.flightPlansService.GetAllAsync(flight => relative_to >= flight.InitialLocation.DateTime);
-            IList<Task<Flight?>> flightTasks = new List<Task<Flight?>>();
+            var flightPlansList = await this.flightPlansService.GetAllAsync(flight => relativeTo >= flight.InitialLocation.DateTime);
+            IList<Task<Flight>> flightTasks = new List<Task<Flight>>();
             foreach (FlightPlan flightPlan in flightPlansList) {
-                flightTasks.Add(Flight.GetFlightRelativeToTimeAsync(flightPlan, relative_to));
+                flightTasks.Add(Flight.GetFlightRelativeToTimeAsync(flightPlan, relativeTo));
             }
 
-            List<Flight?> flightList = new List<Flight?>(await Task.WhenAll(flightTasks));
+            List<Flight> flightList = new List<Flight>(await Task.WhenAll(flightTasks));
 
-            if (this.Request.Query.Keys.Contains("sync_all")) {
-                IList<Flight> externalFlights = await this.getFlightsFromExternalServersAsync(relative_to);
+            if (this.Request!=null && this.Request.Query.Keys.Contains("sync_all")) {
+                IList<Flight> externalFlights = await this.getFlightsFromExternalServersAsync(relativeTo);
                 flightList.AddRange(externalFlights);
             }
 
-            flightList.RemoveAll(plan => plan == null);
-            return Ok(flightList);
+            flightList.RemoveAll(flight => flight == null);
+            return flightList;
         }
 
         private async Task<IList<Flight>> getFlightsFromExternalServersAsync(DateTime relative_to) {
             var servers = await this.serverService.GetAllAsync();
             IList<Task<HttpResponseMessage>> tasksList = new List<Task<HttpResponseMessage>>();
-            HttpClient client = new HttpClient();
+            HttpClient client = this.httpClientFactory.CreateClient(nameof(IServerService));
             foreach (Server server in servers) {
-                var uri = new Uri($"{server.URL}/api/Flights?relative_to={relative_to.ToString("yyyy-MM-ddTHH:mm:ssZ")}");
+                var uri = new Uri($"{server.URL}/api/Flights?relativeTo={relative_to.ToString("yyyy-MM-ddTHH:mm:ssZ")}");
                 tasksList.Add(client.GetAsync(uri));
             }
 

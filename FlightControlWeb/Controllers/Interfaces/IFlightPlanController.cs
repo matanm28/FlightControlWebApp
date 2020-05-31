@@ -1,4 +1,4 @@
-﻿namespace FlightControlWeb.Controllers {
+﻿namespace FlightControlWeb.Controllers.Interfaces {
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using DataAccessLibrary.Models;
