@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLibrary.Migrations
 {
     [DbContext(typeof(FlightControlContext))]
-    [Migration("20200527200618_DBCreation")]
-    partial class DBCreation
+    [Migration("20200531123635_dbCreation")]
+    partial class dbCreation
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
