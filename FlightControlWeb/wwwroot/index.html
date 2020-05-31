@@ -14,9 +14,31 @@
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
     <script type="text/javascript">
         var markerDict = {};
+        var planePath = {};
         var setIntervalInAction = false;
+        var refreshIntervalId = 0;
         var lastRow = "";
+        var lastMarker;
         var UpdateTime;
+        //icons
+        var blackPlaneIcon = L.Icon.extend({
+            options: {
+                iconUrl: 'custom-black-plane-icon.png',
+                iconSize: [46, 20],
+                iconAnchor: [23, 10],
+                popupAnchor: [0, -10]
+            }
+        });
+        var planeIcon = L.Icon.extend({
+            options: {
+                iconUrl: 'custom-plane-icon.png',
+                iconSize: [46, 20],
+                iconAnchor: [23, 10],
+                popupAnchor: [0, -10]
+            }
+        });
+        var blackAirplaneIcon = new blackPlaneIcon();
+        var markedAirplaneIcon = new planeIcon();
         $(document).ready(function () {
 
             //getFlights();
@@ -41,6 +63,7 @@
                     map.removeLayer(markerDict[id]);
                     //delete from dict
                     delete markerDict[id];
+                    delete planePath[id];
                 },
                 error: function () {
                     alert("failed to delete flight: " + id);
@@ -49,7 +72,6 @@
         }
 
         function startSession(relativeTo) {
-            var refreshIntervalId;
             if (setIntervalInAction) {
                 clearInterval(refreshIntervalId);
             }
@@ -58,8 +80,6 @@
             relativeTo = relativeTo + ":00Z";
             var start = new Date(relativeTo);
             UpdateTime = start.getTime();
-            //delete all former flights
-            //initialTablesAndMarkers();
             //every 3 sec do:
             refreshIntervalId = setInterval(function () {
                 //update time
@@ -100,8 +120,19 @@
                     //update position marker
                     markerDict[flight.flight_id].setLatLng([flight.latitude, flight.longitude]);
                 } else {
+                    $.ajax({
+                        type: "GET",
+                        url: "api/FlightPlan/" + flight.flight_id,
+                        async: false,
+                        success: function(flightPlan) {
+                            check(flight, flightPlan);
+                        },
+                        error: function () {
+                            alert("Failed getting flight plan");
+                        }
+                    });
                     //add the marker
-                    addMarkerToMap(flight);
+                    //addMarkerToMap(flight);
                     //add the row
                     addRowToTable(flight);
                 }
@@ -125,6 +156,8 @@
                     row.parentNode.removeChild(row);
                     //delete from dict
                     delete markerDict[id];
+                    delete planePath[id];
+
                 }
             }
         }
@@ -143,14 +176,14 @@
             }
         }
 
-        function addMarkerToMap(flight) {
-            var plainIcon = L.icon({
-                iconUrl: 'custom-black-plane-icon.png',
-                iconSize: [46, 20],
-                iconAnchor: [23, 10],
-                popupAnchor: [0, -10]
-            });
-            var marker = L.marker([flight.latitude, flight.longitude], { icon: plainIcon });
+        function check(flight, flightPlan) {
+            let check = flightPlan.initial_location;
+        }
+
+        function addMarkerToMap(flight, flightPlan) {
+            let check = flightPlan.initial_location;
+            var marker = L.marker([flight.latitude, flight.longitude]);
+            marker.setIcon(blackAirplaneIcon);
             marker.on("click", prePopupFlightDetails);
             marker.addTo(map);
             marker.bindPopup(
@@ -174,15 +207,18 @@
         function popupFlightDetails(id) {
             var row = document.getElementById(id);
             var marker = markerDict[id];
-            marker.setIcon('custom-plane-icon.png');
             if (lastRow != "" && lastRow != row) {
+                lastMarker.setIcon(blackAirplaneIcon);
                 $(lastRow).css('background', '');
             }
             if (row.style.background == "" || row.style.background == "white") {
+                marker.setIcon(markedAirplaneIcon);
                 $(row).css('background', 'blue');
             } else {
+                marker.setIcon(blackAirplaneIcon);
                 $(row).css('background', '');
             }
+            lastMarker = marker;
             lastRow = row;
             marker.togglePopup();
         }
@@ -252,7 +288,7 @@
     <div id="map" class="col-7">
         <script>
             //crate map 51.505, -0.09
-            var map = L.map('map').setView([0, 0], 2);
+            var map = L.map('map', {closePopupOnClick: false}).setView([0, 0], 2);
             L.tileLayer('https://api.maptiler.com/maps/basic-4326/256/{z}/{x}/{y}.png?key=kUaqUXbYZJZLOhn9aaIH',
                 {
                     attribution:

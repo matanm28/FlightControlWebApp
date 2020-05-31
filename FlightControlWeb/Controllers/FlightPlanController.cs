@@ -45,7 +45,7 @@ namespace FlightControlWeb.Controllers {
                 return NotFound(id);
             }
 
-            var flightPlan = (await GetFlightPlan(id)).Value;
+            var flightPlan = (await this.context.FlightPlans.FindAsync(id));
             if (flightPlan != null) {
                 return Ok(flightPlan);
             }
