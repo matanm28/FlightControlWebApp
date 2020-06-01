@@ -25,11 +25,13 @@
         var planePath = {};
         var setIntervalInAction = false;
         var refreshIntervalId = 0;
+        var myVar = 0;
+        var UpdateTime1;
+        var UpdateTime2;
         var lastRow = "";
         var lastMarker;
         var lastPolyLine;
-        var polyline;
-        var UpdateTime;
+        var polyline = "";
         //icons
         var blackPlaneIcon = L.Icon.extend({
             options: {
@@ -53,6 +55,10 @@
 
         });
 
+        /**
+         * delete specific flight when trash icon clicked
+         * @param x trash icon
+         */
         function deleteFlight(x) {
             var row = x.parentNode.parentNode;
             var id = row.cells[0].innerHTML;
@@ -60,35 +66,36 @@
                 type: "DELETE",
                 url: "api/Flights/" + id,
                 success: function () {
-                    //delete from table
-                    row.remove();
-                    $(".add-new").removeAttr("disabled");
-                    //delete from map
-                    map.removeLayer(markerDict[id]);
-                    //delete from dict
-                    delete markerDict[id];
-                    delete planePath[id];
+                    deleteMemoryFlight(id, row);
                 },
                 error: function (e) {
+                    //todo: check if error msg is working
                     alert(e.srcElement.response);
                 }
             });
         }
 
+        /**
+         * when datetime submitted, we start session of getting flights every 3 seconds
+         * @param relativeTo current date time
+         */
         function startSession(relativeTo) {
+            //if its not first session
             if (setIntervalInAction) {
                 clearInterval(refreshIntervalId);
+                clearInterval(myVar);
             }
             setIntervalInAction = true;
             //save start date
             relativeTo = relativeTo + ":00Z";
             var start = new Date(relativeTo);
-            UpdateTime = start.getTime();
+            UpdateTime1 = start.getTime();
+            UpdateTime2 = start.getTime();
             //every 3 sec do:
             refreshIntervalId = setInterval(function () {
                 //update time
                 var currentTime = new Date();
-                currentTime.setTime(UpdateTime);
+                currentTime.setTime(UpdateTime1);
                 var relativeTo = Date.UTC(currentTime.getUTCFullYear(),
                     currentTime.getUTCMonth(),
                     currentTime.getUTCDate(),
@@ -98,75 +105,117 @@
                 //get all relative flights
                 var date = new Date(relativeTo).toISOString();
                 getFlights(date);
-                UpdateTime = UpdateTime + 3000;
+                UpdateTime1 = UpdateTime1 + 3000;
             },
                 3000);
-
+            myVar = setInterval(function () {
+                var d = new Date();
+                d.setTime(UpdateTime2);
+                //utc date
+                var date = Date.UTC(d.getUTCFullYear(),
+                    d.getUTCMonth(),
+                    d.getUTCDate(),
+                    d.getUTCHours(),
+                    d.getUTCMinutes(),
+                    d.getUTCSeconds());
+                //todo: i tried date.toLocaleTimeString(); and it didn't work
+                var t = d.toLocaleTimeString();
+                document.getElementById("demo").innerHTML = t;
+                UpdateTime2 = UpdateTime2 + 1000;
+            }, 1000);
         }
 
+        /**
+         * gets list of flights who relative to relativeTime
+         * @param relativeTime
+         */
         function getFlights(relativeTime) {
             $.ajax({
                 type: "GET",
                 url: "api/Flights?relative_to=" + relativeTime + "&sync_all",
                 success: addToTableAndMap,
                 error: function (e) {
+                    //todo: check if error msg is working
                     alert();
                 }
             });
         }
 
-
+        /**
+          * for each flight, update/create/delete
+          * @param {} flights list of flights
+          * @returns {} 
+          */
         function addToTableAndMap(flights) {
             flights.forEach(function (flight) {
-                var table = $('#my_flights');
                 var row = document.getElementById(flight.flight_id);
                 //if the flight is already in Table
                 if (row != null) {
                     //update position marker
                     markerDict[flight.flight_id].setLatLng([flight.latitude, flight.longitude]);
                 } else {
-                    $.ajax({
-                        type: "GET",
-                        url: "api/FlightPlan/" + flight.flight_id,
-                        //async: false,
-                        success: function (flightPlan) {
-                            addMarkerToMap(flight, flightPlan);
-                        },
-                        error: function () {
-                            alert("Failed getting flight plan");
-                        }
-                    });
-                    //add the marker
-                    //addMarkerToMap(flight);
-                    //add the row
-                    addRowToTable(flight);
+                    creatingFlight(flight);
                 }
             });
-            //if there are flights in table and map that finished
-            for (var id in markerDict) {
-                var removeFlight = true;
-                //checks if the current flight supposed to be removed
-                for (i = 0; i < flights.length; i++) {
-                    var currentFlightId = flights[i].flight_id;
-                    if (currentFlightId == id) {
-                        removeFlight = false;
-                        break;
-                    }
-                }
-                if (removeFlight) {
-                    //delete from map
-                    map.removeLayer(markerDict[id]);
-                    //delete from table
-                    var row = document.getElementById(id);
-                    row.parentNode.removeChild(row);
-                    //delete from dict
-                    delete markerDict[id];
-                    delete planePath[id];
+            finishedFlights(flights);
+        }
 
+        /**
+         * creating flight by getting his flight plan and adding to map and table
+         * @param flight
+         */
+        function creatingFlight(flight) {
+            $.ajax({
+                type: "GET",
+                url: "api/FlightPlan/" + flight.flight_id,
+                success: function (flightPlan) {
+                    //add the marker
+                    addMarkerToMap(flight, flightPlan);
+                    //add the row
+                    addRowToTable(flight);
+                },
+                error: function () {
+                    //todo: check if error msg is working
+                    alert("Failed getting flight plan");
+                }
+            });
+        }
+
+        /*
+          * if there are flights in table and map that finished
+          * @param {} flights list
+          * @returns {} 
+        */
+        function finishedFlights(flights) {
+            for (var id in markerDict) {
+                if (removeFlightOrNot(flights, id)) {
+                    var row = document.getElementById(id);
+                    deleteMemoryFlight(id, row);
+                    //row.parentNode.removeChild(row);
                 }
             }
         }
 
+       /**
+        * checks if the current flight supposed to be removed
+        * @param flights flight list
+        * @param id flight id
+        * @returns false if the flight is in the flight list and true if flight supposed to be removed
+        */
+        function removeFlightOrNot(flights, id) {
+            for (i = 0; i < flights.length; i++) {
+                var currentFlightId = flights[i].flight_id;
+                if (currentFlightId == id) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /**
+         * add row to table (my flights table or external flights table)
+         * @param flight
+         */
         function addRowToTable(flight) {
             if (!flight.is_external) {
                 $('#my_flights').append('<tr id=' +
@@ -175,16 +224,17 @@
                     flight.flight_id +
                     '</td><td>' +
                     flight.company_name +
-                    '</td><td><a class="delete" title="Delete" data-toggle="tooltip" style="color: black" onclick="deleteFlight(this)"><i class="fas fa-trash"></i></a></td>');
+                    '</td><td><a class="delete" title="Delete" data-toggle="tooltip" style="color: white" onclick="deleteFlight(this)"><i class="fas fa-trash"></i></a></td>');
             } else {
                 $('#external_flights').append('<tr><td>' + flight.flight_Id + '</td><td>' + flight.company_name);
             }
         }
 
-        function check(flight, flightPlan) {
-            let check = flightPlan.initial_location;
-        }
-
+        /**
+         * add marker (and his path and popup) to the map
+         * @param flight
+         * @param flightPlan
+         */
         function addMarkerToMap(flight, flightPlan) {
             //create plane path
             var endLocation = flightPlan.initial_location;
@@ -221,58 +271,77 @@
                 {
                     closeButton: false
                 });
-            //zoom the map to the polyline
-            //map.fitBounds(pathLine.getBounds());
             //add the marker and his path to dictionaries
             markerDict[flight.flight_id] = marker;
             planePath[flight.flight_id] = list;
         }
 
+        /**
+         * row is clicked and flight details popup and also row background and path flight
+         * @param id flight id
+         */
         function popupFlightDetails(id) {
             var row = document.getElementById(id);
             var marker = markerDict[id];
-            //var polyline = planePath[id];
+            //if its not the first time of marked row or last row is not the marked row
             if (lastRow != "" && lastRow != row) {
                 lastMarker.setIcon(blackAirplaneIcon);
                 $(lastRow).css('background', '');
-                //map.removeLayer(lastPolyLine);
+                map.removeLayer(lastPolyLine);
             }
-            if (row.style.background == "" || row.style.background == "white") {
+            //if the last row is not the marked row
+            if (row.style.background == "") {
                 marker.setIcon(markedAirplaneIcon);
-                $(row).css('background', 'blue');
+                $(row).css('background', '#e4a5e4');
                 polyline = L.polyline(planePath[id]).addTo(map);
-                //map.addLayer(polyline);
             } else {
                 marker.setIcon(blackAirplaneIcon);
                 $(row).css('background', '');
-                //map.removeLayer(polyline);
+                map.removeLayer(polyline);
             }
+            //update for next onClick
             lastMarker = marker;
             lastRow = row;
             lastPolyLine = polyline;
             marker.togglePopup();
         }
 
-        function initialTablesAndMarkers() {
-            var count = document.getElementById("my_flights").rows.length;
-            for (i = 1; i < count; i++) {
-                document.getElementById("my_flights").deleteRow(i);
+        /**
+         * delete flight from map, table, and dictionaries
+         * @param id flight id
+         * @param row current row
+         */
+        function deleteMemoryFlight(id, row) {
+            //delete from table
+            row.remove();
+            $(".add-new").removeAttr("disabled");
+            //if the flight marked , remove polyline
+            if (markerDict[id] == lastMarker) {
+                map.removeLayer(lastPolyLine);
+                lastPolyLine = "";
+                lastRow = "";
             }
-            var count = document.getElementById("external_flights").rows.length;
-            for (i = 1; i < count; i++) {
-                document.getElementById("external_flights").deleteRow(i);
-            }
-            for (var id in markerDict) {
-                map.removeLayer(markerDict[id]);
-                delete markerDict[id];
-                delete planePath[id];
-            }
+            //delete marker from map
+            map.removeLayer(markerDict[id]);
+            //delete from dict
+            delete markerDict[id];
+            delete planePath[id];
         }
 
+        /**
+         * gets key by value of dict
+         * @param dict dictionary
+         * @param value
+         * @return the right key
+         */
         function getKeyByValue(dict, value) {
             return Object.keys(dict).find(key => dict[key] == value);
         }
 
+        /**
+         * marker is clicked, we get the id before calling the func popupFlightDetails.
+         * @param e the marker
+         */
         function prePopupFlightDetails(e) {
             var marker = e.sourceTarget.dragging._marker;
             //gets id
@@ -282,95 +351,105 @@
         }
 
     </script>
-    <style>
-        div.twoTables {
-            width: 95px;
-            height: 450px;
-            overflow: auto;
-        }
+<style>
+    #map {
+        border-style: solid;
+    }
+    #demo {
+        border-style: solid;
+        position: absolute;
+        font-size: 15px;
+        font-family: initial;
+    }
+    div.myFlights {
+        width: 400px;
+        height: 450px;
+        overflow: auto;
+    }
+    div.externalFlights {
+        width: 400px;
+        height: 450px;
+        overflow: auto;
+    }
+    body {
+        background-image: url('flight.jpg');
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-size: cover;
+    }
 
-        body {
-            background-image: url('flight.jpg');
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            background-size: cover;
-        }
-
-        .fa-trash:hover {
-            color: red;
-        }
-    </style>
+    .fa-trash:hover {
+        color: black;
+    }
+</style>
 </head>
 <body>
 <div class="row">
-        <div class="col-8" style="color: whitesmoke">
-            <h1 style="font-size: 52px; font-family: unset">Flights Control </h1>
-            <h2 style="font-size: 15px; font-family: initial">Matan Malka & Sapir Graffi </h2>
+    <div class="col-8" style="color: whitesmoke">
+        <h1 style="font-size: 52px; font-family: cursive"><b>Flights Control</b> </h1>
+        <h2 style="font-size: 25px; font-family: initial"><i>Matan Malka & Sapir Graffi</i></h2>
+    </div>
+    <div class="container col-3">
+        <div>
+            <label for="datetime"><b><br>Enter relative date and time flights:</b></label>
+            <input type="datetime-local" id="datetime" name="datetime">
+            <input type="submit" onclick="startSession(datetime.value)">
         </div>
-        <div class="container col-4">
-            <div>
-                <label for="datetime">Enter relative date and time flights:</label>
-                <input type="datetime-local" id="datetime" name="datetime">
-                <input type="submit" onclick="startSession(datetime.value)">
-            </div>
-        </div>
+    </div>
+    <div class="float-left col-1">
+        <h1 style="font-size: 15px; font-family: cursive"><b><br>Time Flights</b> </h1>
+        <p id="demo"></p>
+    </div>
 </div>
+<div class="row" style="height: 350px">
+    <div id="map" class="col-12" ></div>
+</div>
+<script>
+    //crate map 51.505, -0.09
+    var map = L.map('map', { closePopupOnClick: false }).setView([0, 0], 2);
+    L.tileLayer('https://api.maptiler.com/maps/basic-4326/256/{z}/{x}/{y}.png?key=kUaqUXbYZJZLOhn9aaIH',
+        {
+            attribution:
+                '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
+        }).addTo(map);
+</script>
 <div class="row">
-    <div id="map" class="col-7">
-        <script>
-            //crate map 51.505, -0.09
-            var map = L.map('map', {closePopupOnClick: false}).setView([0, 0], 2);
-            L.tileLayer('https://api.maptiler.com/maps/basic-4326/256/{z}/{x}/{y}.png?key=kUaqUXbYZJZLOhn9aaIH',
-                {
-                    attribution:
-                        '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
-                }).addTo(map);
-            //create plains
-            //var plainIcon = L.icon({
-            //    iconUrl: 'custom-plane-icon.png',
-            //    iconSize: [95, 40],
-            //    iconAnchor: [51.5, -0.11]
-            //});
-            //var marker = L.marker([51.5, -0.11], { icon: plainIcon }).addTo(map);
-            //marker.bindPopup(
-            //    "<b>Flight Details<br>flight id:<br>longitude:<br>latitude:<br>passengers:<br>company name:<br>date time:<br>is external:</b>");
-        </script>
+    <div id="drop-area" class="col-4">
+        <h2 style="font-family: cursive;"><b>Add Flights</b></h2>
+        <form class="my-form">
+            <p style="font-family: cursive">Upload multiple files with the file dialog or by dragging and dropping images onto the dashed region</p>
+            <input type="file" id="fileElem" multiple accept="image/*" onchange="handleFiles(this.files)">
+            <label class="button" for="fileElem" style="font-family: cursive">Select some files</label>
+        </form>
     </div>
-    <div class="twoTables col-md-5">
-        <table class="twoRows">
-            <tr>
-                <h2>My Flights</h2>
-                <table class="table table-bordered table-striped table-hover" id="my_flights">
-                    <thead style="color: white; background: black">
-                    <tr>
-                        <th>Fight id</th>
-                        <th>Company Name</th>
-                        <th>Delete</th>
-                    </tr>
-                    </thead>
-                </table>
-            </tr>
-            <tr>
-                <h2>External Flights</h2>
-                <table class="table table-bordered table-striped table-hover" id="external_flights">
-                    <thead style="color: white; background: black">
-                    <tr>
-                        <th>Flight id</th>
-                        <th>Company Name</th>
-                    </tr>
-                    </thead>
-                </table>
-            </tr>
-        </table>
+    <div class="col-4">
+        <h2 style="font-family: cursive;"><b>External Flights</b></h2>
+        <div class="externalFlights">
+            <table class="table table-bordered table-striped table-hover" id="external_flights">
+                <thead style="color: white; background: black">
+                <tr>
+                    <th>Flight id</th>
+                    <th>Company Name</th>
+                </tr>
+                </thead>
+            </table>
+        </div>
     </div>
-</div>
-<div id="drop-area">
-    <form class="my-form">
-        <p>Upload multiple files with the file dialog or by dragging and dropping images onto the dashed region</p>
-        <input type="file" id="fileElem" multiple accept="image/*" onchange="handleFiles(this.files)">
-        <label class="button" for="fileElem">Select some files</label>
-    </form>
-</div>
 
+    <div class="col-4">
+        <h2 style="font-family: cursive;"><b>My Flights</b></h2>
+        <div class="myFlights">
+            <table class="table table-bordered table-striped table-hover" id="my_flights">
+                <thead style="color: white; background: black">
+                <tr>
+                    <th>Fight id</th>
+                    <th>Company Name</th>
+                    <th>Delete</th>
+                </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
 </body>
 </html >

@@ -65,7 +65,7 @@
         // GET: api/Flights?relativeTo=<DateTime>&sync_all
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Flight>>> GetFlightsRelativeTo([FromQuery(Name = "relative_to")] DateTime relativeTo) {
-            if (relativeTo.Kind != DateTimeKind.Utc || true) {
+            if (relativeTo.Kind != DateTimeKind.Utc) {
                 return this.BadRequest($"requset:\"{this.Request}\"\nstatus:\"failed\"\nreason:\"relativeTo format must be yyyy-MM-ddTHH:mm:ssZ (UTC time)\"");
             }
 
