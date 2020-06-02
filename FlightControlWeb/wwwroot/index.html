@@ -119,10 +119,10 @@
                         month: '2-digit',
                         day: '2-digit',
                         hour: '2-digit',
-                        hour12:false,
+                        hour12: false,
                         minute: '2-digit',
                         second: '2-digit',
-                        timeZone:'UTC'
+                        timeZone: 'UTC'
                     });
                 const [
                     { value: month },, { value: day },, { value: year },, { value: hour },, { value: minute },,
@@ -368,23 +368,38 @@
 
     #demo {
         border-style: solid;
-        position: absolute;
         font-size: 18px;
         font-family: initial;
-        horiz-align: center;
+    }
+
+    #drop-area {
+        position: relative;
+        right: 300px;
+        bottom: 70px;
+    }
+
+    .myFlights tbody, .externalFlights tbody {
+        display: block;
+        height: 125px;
+        overflow: auto;
+    }
+
+    thead, tbody tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    thead {
+        width: calc(100%-1em)
+    }
+
+    th,td {
         text-align: center;
     }
 
-    div.myFlights {
-        width: 400px;
-        height: 450px;
-        overflow: auto;
-    }
-
-    div.externalFlights {
-        width: 400px;
-        height: 450px;
-        overflow: auto;
+    .myFlights, .externalFlights {
+        width: 500px;
     }
 
     body {
@@ -398,56 +413,54 @@
 </style>
 </head>
 <body>
+<div class="col-12" style="color: whitesmoke; ">
+    <h2 class="text-center" style="font-size: 52px; font-family: cursive;">
+        <b>Flights Control</b>
+    </h2>
+    <h2 class="text-center" style="font-size: 25px; font-family: initial">
+        <i>Matan Malka & Sapir Graffi</i>
+    </h2>
+</div>
 <div class="row">
-    <div class="col-4" style="color: whitesmoke">
-        <h1 style="font-size: 52px; font-family: cursive">
-            <b>Flights Control</b>
-        </h1>
-        <h2 style="font-size: 25px; font-family: initial">
-            <i>Matan Malka & Sapir Graffi</i>
-        </h2>
+    <div class="text-center col-6">
+        <label class="align-self-center" for="datetime">
+            <b>Enter relative date and time flights:</b>
+        </label>
+        <br>
+        <input type="datetime-local" id="datetime" name="datetime">
+        <input type="submit" onclick="startSession(datetime.value)">
     </div>
-    <div class="container col-3">
-        <div>
-            <label for="datetime">
-                <b><br>Enter relative date and time flights:</b>
-            </label>
-            <input type="datetime-local" id="datetime" name="datetime">
-            <input type="submit" onclick="startSession(datetime.value)">
-        </div>
-    </div>
-    <div class="float-right col-5">
-        <h1 style="font-size: 20px; font-family: cursive">
-            <b><br>Current Relative Time</b>
+    <div class="text-center col-6">
+        <h1 class="text-center" style="font-size: 20px; font-family: cursive">
+            <b>Current Relative Time:</b>
         </h1>
-        <p id="demo"></p>
+        <p class="align-self-center" id="demo"></p>
     </div>
 </div>
 <div class="row">
-    <div id="map" class="col-6"></div>
+    <div id="map" class="col-6" style="height: 500px"></div>
     <div class="col-6">
-        <table class="col-6">
+        <table class="table">
             <tr>
                 <h2 style="font-family: cursive;">
-                        <b>My Flights</b>
-                    </h2>
-                    <table class="table table-bordered table-striped table-hover" id="my_flights">
-                        <thead style="color: white; background: black;">
-                            <tr>
-                                <th>Fight id</th>
-                                <th>Company Name</th>
-                                <th>Delete</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                    <b>Internal Flights</b>
+                </h2>
+                <table class="table table-bordered table-striped table-hover myFlights" id="my_flights">
+                    <thead style="color: white; background: black;">
+                    <tr>
+                        <th>Fight id</th>
+                        <th>Company Name</th>
+                        <th>Delete</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </tr>
             <tr>
                 <h2 style="font-family: cursive;">
                     <b>External Flights</b>
                 </h2>
-                <div class="myFlights">
-                <table class="table table-bordered table-striped table-hover" id="external_flights">
+                <table class="table table-bordered table-striped table-hover externalFlights" id="external_flights">
                     <thead style="color: white; background: black">
                     <tr>
                         <th>Flight id</th>
@@ -456,7 +469,6 @@
                     </thead>
                     <tbody></tbody>
                 </table>
-                </div>
             </tr>
         </table>
     </div>
@@ -472,7 +484,7 @@
         }).addTo(map);
 </script>
 <div class="row">
-    <div id="drop-area" class="col-3">
+    <div class="col-5" id="drop-area">
         <h2 style="font-family: cursive;">
             <b>Add Flights</b>
         </h2>
