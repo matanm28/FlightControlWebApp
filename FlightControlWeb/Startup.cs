@@ -12,14 +12,13 @@ namespace FlightControlWeb {
     using DataAccessLibrary.Data;
     using DataAccessLibrary.DataAccess.Implementations;
     using DataAccessLibrary.DataAccess.Interfaces;
-    
     using FlightControlWeb.Controllers.Implementations;
     using FlightControlWeb.Controllers.Interfaces;
     using Microsoft.EntityFrameworkCore;
     using Newtonsoft.Json;
 
     public class Startup {
-        private const int SecondsToTimeOut = 5;
+        private const int SecondsToTimeOut = 10;
         public Startup(IConfiguration configuration) {
             Configuration = configuration;
         }

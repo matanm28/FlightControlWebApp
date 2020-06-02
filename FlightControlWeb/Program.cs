@@ -35,7 +35,7 @@ namespace FlightControlWeb {
                 try {
                     var context = services.GetRequiredService<DbContext>();
                     context.Database.EnsureCreated();
-                    context.Database.Migrate();
+                    //context.Database.Migrate();
                 }
                 catch (Exception ex) {
                     var logger = services.GetRequiredService<ILogger<Program>>();

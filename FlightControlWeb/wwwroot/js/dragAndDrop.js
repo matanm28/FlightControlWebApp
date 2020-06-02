@@ -43,9 +43,9 @@ function uploadFile(file) {
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.addEventListener('readystatechange',
         function(e) {
-            if (xhr.readyState == 4 && (xhr.status == 200 || xhr.status == 201 || xhr.status == 202)) {
+            if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 201 || xhr.status === 202)) {
                 console.log(e.srcElement.response);
-            } else if (xhr.readyState == 4 && (xhr.status != 200 && xhr.status!=201 && xhr.status!=202)) {
+            } else if (xhr.readyState === 4 && (xhr.status !== 200 && xhr.status!==201 && xhr.status!==202)) {
                 alert(e.srcElement.response);
             }
         });

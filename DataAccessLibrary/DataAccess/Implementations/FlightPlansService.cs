@@ -51,7 +51,7 @@
         /// <inheritdoc />
         public Task<FlightPlan> FindAsync(string id) {
             if (id == null) {
-                return Task.FromResult<FlightPlan>(null);
+                return Task.FromResult<FlightPlan>(result: null);
             }
 
             return this.dbContext.FlightPlans.Include(nameof(FlightPlan.InitialLocation)).Include(nameof(FlightPlan.Segments))
@@ -103,8 +103,7 @@
                 if (propertyInfo.Name == nameof(FlightPlan.Id)) {
                     continue;
                 }
-
-                object value = propertyInfo.GetValue(flightPlan);
+                object? value = propertyInfo.GetValue(flightPlan);
                 if (value == null) {
                     return false;
                 }
