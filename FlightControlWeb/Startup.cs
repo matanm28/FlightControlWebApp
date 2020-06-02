@@ -18,7 +18,7 @@ namespace FlightControlWeb {
     using Newtonsoft.Json;
 
     public class Startup {
-        private const int SecondsToTimeOut = 10;
+        private const int SecondsToTimeOut = 1;
         public Startup(IConfiguration configuration) {
             Configuration = configuration;
         }

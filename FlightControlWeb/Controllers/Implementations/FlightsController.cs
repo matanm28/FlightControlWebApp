@@ -59,7 +59,7 @@
             var flightPlan = await this.flightPlansService.RemoveAsync(id);
             await this.flightPlansService.SaveChangesAsync();
 
-            return this.Ok(new Flight(flightPlan));
+            return Ok(new Flight(flightPlan));
         }
 
         // GET: api/Flights?relativeTo=<DateTime>&sync_all

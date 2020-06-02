@@ -42,11 +42,11 @@ function uploadFile(file) {
     xhr.open('POST', url);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.addEventListener('readystatechange',
-        function(e) {
+        function (e) {
             if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 201 || xhr.status === 202)) {
-                console.log(e.srcElement.response);
+                $("#drop-area").notify(e.srcElement.response, { position: "top-center", className: "success", autoHideDelay: 7000});
             } else if (xhr.readyState === 4 && (xhr.status !== 200 && xhr.status!==201 && xhr.status!==202)) {
-                alert(e.srcElement.response);
+                $("#drop-area").notify(e.srcElement.response, { position:"top-center"});
             }
         });
     formData.append('file', file);

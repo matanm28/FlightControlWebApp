@@ -96,7 +96,8 @@
             await this.flightPlansService.AddAsync(flightPlan);
             await this.flightPlansService.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(this.GetFlightPlan), new { id = flightPlan.Id }, flightPlan);
+            return CreatedAtAction(nameof(this.GetFlightPlan), new { id = flightPlan.Id }, $"Flight Plan with id: '{flightPlan.Id}' added successfully.\n" 
+                                                                                           + $"Access at route: \"api/FlightPlan/{{id}}\"");
         }
 
         [HttpPost("List")]

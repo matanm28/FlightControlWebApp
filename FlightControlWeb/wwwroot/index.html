@@ -19,6 +19,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <link rel="stylesheet" href="css/dragAndDropStyle.css">
 <script src="js/dragAndDrop.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.min.js"></script>
 <script type="text/javascript">
 
     var markerDict = {};
@@ -65,12 +66,13 @@
         $.ajax({
             type: "DELETE",
             url: `api/Flights/${id}`,
-            success: function() {
+            success: function () {
                 deleteMemoryFlight(id, row);
+                $.notify(`Flight "${id}" deleted successfully!`, { position: "top-right", className: "success", autoHideDelay: 4000 });
             },
             error: function(e) {
                 //todo: check if error msg is working
-                alert(e.srcElement.response);
+                $.notify(e.srcElement.response, 'error');
             }
         });
     }
@@ -145,8 +147,7 @@
             error: function(e) {
                 //todo: check if error msg is working
                 console.log(e.responseText);
-                alert(`Problem!\n${e.responseText}`);
-
+                $.notify(`Problem!\n${e.responseText}`, { position: "top-right", className: "error", autoHideDelay: 4000 });
             }
         });
 
@@ -187,10 +188,9 @@
                 addRowToTable(flight);
             },
             error: function(e) {
-                //todo: check if error msg is working
-                if (e.status == 404) {
+                if (e.status === 404) {
                     console.log(e.responseText);
-                    alert(`Problem!\n${e.responseText}`);
+                    $.notify(`Problem!\n${e.responseText}`, { position: "top-right", className: "error", autoHideDelay: 7000 });
                 }
             }
         });
@@ -220,7 +220,7 @@
     function removeFlightOrNot(flights, id) {
         for (let i = 0; i < flights.length; i++) {
             const currentFlightId = flights[i].flight_id;
-            if (currentFlightId == id) {
+            if (currentFlightId === id) {
                 return false;
             }
         }
@@ -478,7 +478,7 @@
         </h2>
         <form class="my-form">
             <p style="font-family: cursive">Upload multiple files with the file dialog or by dragging and dropping images onto the dashed region</p>
-            <input type="file" id="fileElem" multiple accept="image/*" onchange="handleFiles(this.files)">
+            <input type="file" id="fileElem" multiple accept="application/JSON" onchange="handleFiles(this.files)">
             <label class="button" for="fileElem" style="font-family: cursive">Select some files</label>
         </form>
     </div>
