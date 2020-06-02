@@ -44,6 +44,7 @@
         public async Task<ActionResult<Server>> PostApiServer(Server server)
         {
             await this.serverService.AddAsync(server);
+            await this.serverService.SaveChangesAsync();
 
             return this.CreatedAtAction("GetApiServer", new { id = server.Id }, server);
         }

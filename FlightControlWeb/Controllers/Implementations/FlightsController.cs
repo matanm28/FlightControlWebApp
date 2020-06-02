@@ -59,13 +59,13 @@
             var flightPlan = await this.flightPlansService.RemoveAsync(id);
             await this.flightPlansService.SaveChangesAsync();
 
-            return this.Ok(new Flight(flightPlan));
+            return Ok(new Flight(flightPlan));
         }
 
         // GET: api/Flights?relativeTo=<DateTime>&sync_all
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Flight>>> GetFlightsRelativeTo([FromQuery(Name = "relative_to")] DateTime relativeTo) {
-            if (relativeTo.Kind != DateTimeKind.Utc || true) {
+            if (relativeTo.Kind != DateTimeKind.Utc) {
                 return this.BadRequest($"requset:\"{this.Request}\"\nstatus:\"failed\"\nreason:\"relativeTo format must be yyyy-MM-ddTHH:mm:ssZ (UTC time)\"");
             }
 
@@ -83,7 +83,7 @@
             }
 
             flightList.RemoveAll(flight => flight == null);
-            return flightList;
+            return Ok(flightList);
         }
 
         private async Task<IList<Flight>> getFlightsFromExternalServersAsync(DateTime relative_to) {
@@ -91,15 +91,21 @@
             IList<Task<HttpResponseMessage>> tasksList = new List<Task<HttpResponseMessage>>();
             HttpClient client = this.httpClientFactory.CreateClient(nameof(IServerService));
             foreach (Server server in servers) {
-                var uri = new Uri($"{server.URL}/api/Flights?relativeTo={relative_to.ToString("yyyy-MM-ddTHH:mm:ssZ")}");
+                var uri = new Uri($"{server.URL}/api/Flights?relative_to={relative_to.ToString("yyyy-MM-ddTHH:mm:ssZ")}");
                 tasksList.Add(client.GetAsync(uri));
             }
-
+            IList<HttpResponseMessage> responseList = new List<HttpResponseMessage>();
             List<Flight> flightsList = new List<Flight>();
-            IList<HttpResponseMessage> responseList = await Task.WhenAll(tasksList);
+            try {
+              responseList = await Task.WhenAll(tasksList);
+            }
+            catch (Exception e) {
+                await Console.Error.WriteLineAsync(e.Message);
+            }
             client.Dispose();
             foreach (HttpResponseMessage response in responseList) {
                 try {
+                    var str = await response.Content.ReadAsStringAsync();
                     IEnumerable<Flight> tempFlights = JsonConvert.DeserializeObject<IEnumerable<Flight>>(await response.Content.ReadAsStringAsync());
                     if (tempFlights != null) {
                         flightsList.AddRange(tempFlights);
@@ -107,7 +113,7 @@
                 }
                 catch (Exception e) {
                     //todo add logger
-                    continue;
+                    await Console.Error.WriteLineAsync(e.Message);
                 }
             }
 

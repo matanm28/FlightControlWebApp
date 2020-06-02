@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace DataAccessLibrary.Models {
     using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.Threading.Tasks;
-    using DataAccessLibrary.Converters;
     using MathNet.Numerics;
     using MathNet.Numerics.Interpolation;
     using Newtonsoft.Json;
 
     public class Flight {
-
         [Key]
         [Required]
         [JsonProperty("flight_id")]
@@ -39,13 +36,13 @@ namespace DataAccessLibrary.Models {
         [DefaultValue(false)]
         public bool IsExternal { get; set; }
 
-        public Flight() {
-        }
+        public Flight() { }
 
         public Flight(FlightPlan flightPlan, bool isExternal = false) {
             if (flightPlan == null) {
                 throw new NullReferenceException();
             }
+
             this.FlightId = flightPlan.Id ?? string.Empty;
             this.CompanyName = flightPlan.CompanyName;
             this.Passengers = flightPlan.Passengers;
@@ -65,8 +62,7 @@ namespace DataAccessLibrary.Models {
             this.IsExternal = isExternal;
         }
 
-
-        public static async Task<Flight?> GetFlightRelativeToTimeAsync(FlightPlan flightPlan, DateTime relativeTo) {
+        public static async Task<Flight> GetFlightRelativeToTimeAsync(FlightPlan flightPlan, DateTime relativeTo) {
             if (!flightPlan.IsOngoing(relativeTo)) {
                 return null;
             }
@@ -126,6 +122,9 @@ namespace DataAccessLibrary.Models {
             return Equals((Flight)obj);
         }
 
-        
+        /// <inheritdoc />
+        public override int GetHashCode() {
+            return HashCode.Combine(this.CompanyName,this.Latitude,this.Longitude,this.DateTime,this.Passengers);
+        }
     }
 }

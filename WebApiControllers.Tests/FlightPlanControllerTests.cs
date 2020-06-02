@@ -54,8 +54,10 @@ namespace WebApiControllers.Tests {
                 Assert.NotNull(actual);
                 mock.Mock<IFlightPlansService>().Verify(x => x.GetAllAsync(flight => relativeTo >= flight.InitialLocation.DateTime), Times.Once);
                 Assert.IsType<ActionResult<IEnumerable<Flight>>>(actual);
-                Assert.NotNull(actual.Value);
-                var actualList = actual.Value.ToList();
+                Assert.NotNull(actual.Result);
+                Assert.IsType<OkObjectResult>(actual.Result);
+                Assert.NotNull((actual.Result as OkObjectResult).Value);
+                var actualList = (actual.Result as OkObjectResult).Value as IList<Flight>;
                 Assert.Equal(expected.Count, actualList.Count);
                 for (int i = 0; i < expected.Count; i++) {
                     Assert.Equal(expected[i], actualList[i]);
@@ -78,11 +80,7 @@ namespace WebApiControllers.Tests {
             
             
         }
-
-        public static async void getFlightPlanById_ShouldReturnCorrectFlight() {
-
-        }
-
+        
         private static Task<List<FlightPlan>> getSampleFlightPlans() {
             List<FlightPlan> output = new List<FlightPlan>() 
             {

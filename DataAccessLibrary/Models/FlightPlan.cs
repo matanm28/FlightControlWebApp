@@ -6,6 +6,7 @@ namespace DataAccessLibrary.Models {
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Linq;
+    using System.Reflection;
     using System.Security.Cryptography;
     using Newtonsoft.Json;
 
@@ -90,6 +91,19 @@ namespace DataAccessLibrary.Models {
             }
 
             return Equals((FlightPlan)obj);
+        }
+
+        public static bool IsValidFlightPlanModel(FlightPlan flightPlan) {
+            if (flightPlan == null) {
+                return false;
+            }
+            foreach (PropertyInfo propertyInfo in flightPlan.GetType().GetProperties()) {
+                if (propertyInfo.GetValue(flightPlan) == null) {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }
