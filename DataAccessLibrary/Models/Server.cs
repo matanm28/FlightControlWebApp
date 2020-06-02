@@ -17,5 +17,31 @@ namespace DataAccessLibrary.Models {
         [MaxLength(1024)]
         [JsonProperty("ServerURL")]
         public string URL { get; set; }
+
+        protected bool Equals(Server other) {
+            return this.URL == other.URL;
+        }
+
+        /// <inheritdoc />
+        public override bool Equals(object? obj) {
+            if (ReferenceEquals(null, obj)) {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj)) {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType()) {
+                return false;
+            }
+
+            return Equals((Server)obj);
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode() {
+            return this.URL.GetHashCode();
+        }
     }
 }

@@ -10,7 +10,7 @@
     using DataAccessLibrary.Models;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.ChangeTracking;
-
+    
     public class ServerService : IServerService {
         private readonly FlightControlContext dbContext;
 
@@ -36,6 +36,10 @@
         /// <inheritdoc />
         public async Task<Server> FindAsync(int id) {
             return await this.dbContext.Servers.FindAsync(id);
+        }
+
+        public Task<Server> FindAsync(Server server) {
+            return this.dbContext.Servers.Where(x => x.URL == server.URL).FirstOrDefaultAsync();
         }
 
         /// <inheritdoc />

@@ -41,8 +41,12 @@
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<Server>> PostApiServer(Server server)
-        {
+        public async Task<ActionResult<Server>> PostApiServer(Server server) {
+            var tempServer = await this.serverService.FindAsync(server);
+            if (tempServer!=null) {
+                return Conflict(
+                        $"A server with same exact data already exists on this server.\nTry using 'api/Servers/{{id}}' with '{tempServer.Id}' as 'id'");
+            }
             await this.serverService.AddAsync(server);
             await this.serverService.SaveChangesAsync();
 
