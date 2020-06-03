@@ -51,7 +51,9 @@
         /// <inheritdoc />
         public Task<FlightPlan> FindAsync(string id) {
             if (id == null) {
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                 return Task.FromResult<FlightPlan>(result: null);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
             }
 
             return this.dbContext.FlightPlans.Include(nameof(FlightPlan.InitialLocation)).Include(nameof(FlightPlan.Segments))
@@ -81,10 +83,12 @@
         public async Task<FlightPlan> RemoveAsync(string id) {
             FlightPlan flightPlan = await this.FindAsync(id);
             if (flightPlan == null) {
+#pragma warning disable CS8603 // Possible null reference return.
                 return null;
+#pragma warning restore CS8603 // Possible null reference return.
             }
             this.dbContext.Locations.Remove(flightPlan.InitialLocation);
-            this.dbContext.Segmentses.RemoveRange(flightPlan.Segments);
+            this.dbContext.Segments.RemoveRange(flightPlan.Segments);
             this.dbContext.FlightPlans.Remove(flightPlan);
             return flightPlan;
         }
@@ -94,7 +98,9 @@
             if (element.Id != null) {
                 return await this.RemoveAsync(element.Id);
             }
+#pragma warning disable CS8603 // Possible null reference return.
             return null;
+#pragma warning restore CS8603 // Possible null reference return.
         }
 
         /// <inheritdoc />

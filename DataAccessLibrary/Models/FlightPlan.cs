@@ -5,6 +5,7 @@ namespace DataAccessLibrary.Models {
     using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
     using System.Security.Cryptography;
@@ -13,17 +14,20 @@ namespace DataAccessLibrary.Models {
     public class FlightPlan {
         [Key]
         [JsonIgnore]
-        public string Id { get; set; }
+        [SuppressMessage("Compiler","CS8618")]
+        public string? Id { get; set; }
         [Required(ErrorMessage = "Number of passengers is required")]
-        public int Passengers { get; set; }
+        public int Passengers { get; set; } 
         [Required(ErrorMessage = "A Company Name is required")]
         [JsonProperty("company_name")]
         [MaxLength(100)]
-        public string CompanyName { get; set; }
+        [SuppressMessage("Compiler", "CS8618")]
+        public string CompanyName { get; set; } 
         [Required(ErrorMessage = "A Location is required")]
         [JsonProperty("initial_location")]
+        [SuppressMessage("Compiler", "CS8618")]
         public Location InitialLocation { get; set; }
-
+        [SuppressMessage("Compiler", "CS8618")]
         public ICollection<Segment> Segments { get; set; }
 
         [JsonIgnore]

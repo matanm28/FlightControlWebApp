@@ -1,14 +1,16 @@
 ﻿namespace FlightControlWeb.Controllers.Implementations {
-    using System;
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Threading.Tasks;
+
     using DataAccessLibrary.DataAccess.Enums;
     using DataAccessLibrary.DataAccess.Interfaces;
     using DataAccessLibrary.Models;
     using FlightControlWeb.Controllers.Interfaces;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net.Http;
+    using System.Threading.Tasks;
 
     [Route("api/[controller]")]
     [ApiController]
@@ -18,7 +20,7 @@
         private readonly IHttpClientFactory httpClientFactory;
 
         /// <inheritdoc />
-        public FlightsController(IFlightPlansService flightPlansService, IServerService serverService,IHttpClientFactory httpClientFactory) {
+        public FlightsController(IFlightPlansService flightPlansService, IServerService serverService, IHttpClientFactory httpClientFactory) {
             this.flightPlansService = flightPlansService;
             this.serverService = serverService;
             this.httpClientFactory = httpClientFactory;
@@ -78,7 +80,7 @@
 
             List<Flight> flightList = new List<Flight>(await Task.WhenAll(flightTasks));
 
-            if (this.Request!=null && this.Request.Query.Keys.Contains("sync_all")) {
+            if (this.Request != null && this.Request.Query.Keys.Contains("sync_all")) {
                 IList<Flight> externalFlights = await this.getFlightsFromExternalServersAsync(relativeTo);
                 flightList.AddRange(externalFlights);
             }
@@ -95,30 +97,36 @@
                 var uri = new Uri($"{server.URL}/api/Flights?relative_to={relative_to.ToString("yyyy-MM-ddTHH:mm:ssZ")}");
                 tasksList.Add(client.GetAsync(uri));
             }
-            IList<HttpResponseMessage> responseList = new List<HttpResponseMessage>();
-            List<Flight> flightsList = new List<Flight>();
             try {
-              responseList = await Task.WhenAll(tasksList);
-            }
-            catch (Exception e) {
+                Task.WaitAll(tasksList.ToArray());
+            } catch (AggregateException e) {
                 await Console.Error.WriteLineAsync(e.Message);
             }
             client.Dispose();
-            foreach (HttpResponseMessage response in responseList) {
-                try {
-                    var str = await response.Content.ReadAsStringAsync();
-                    IEnumerable<Flight> tempFlights = JsonConvert.DeserializeObject<IEnumerable<Flight>>(await response.Content.ReadAsStringAsync());
-                    if (tempFlights != null) {
-                        flightsList.AddRange(tempFlights);
-                    }
-                }
-                catch (Exception e) {
-                    //todo add logger
-                    await Console.Error.WriteLineAsync(e.Message);
-                }
-            }
+            List<Flight> flightsList = await deserializeFlights(tasksList);
 
             flightsList.ForEach(flight => flight.IsExternal = true);
+
+            return flightsList;
+        }
+
+        private static async Task<List<Flight>> deserializeFlights(IList<Task<HttpResponseMessage>> tasksList) {
+            List<Flight> flightsList = new List<Flight>();
+            foreach (Task<HttpResponseMessage> task in tasksList) {
+                if (task.Status == TaskStatus.RanToCompletion) {
+                    try {
+                        var response = await task;
+                        var str = await response.Content.ReadAsStringAsync();
+                        IEnumerable<Flight> tempFlights = JsonConvert.DeserializeObject<IEnumerable<Flight>>(await response.Content.ReadAsStringAsync());
+                        if (tempFlights != null) {
+                            flightsList.AddRange(tempFlights);
+                        }
+                    } catch (Exception e) {
+                        //todo add logger
+                        await Console.Error.WriteLineAsync(e.Message);
+                    }
+                }
+            }
 
             return flightsList;
         }

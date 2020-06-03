@@ -30,7 +30,7 @@ namespace DataAccessLibrary.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Passengers")
-                     .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -86,9 +86,8 @@ namespace DataAccessLibrary.Migrations
 
             modelBuilder.Entity("DataAccessLibrary.Models.Server", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("URL")
                         .IsRequired()

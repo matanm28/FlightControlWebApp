@@ -1,23 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DataAccessLibrary.Models {
+﻿namespace DataAccessLibrary.Models {
     using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
-    using System.ComponentModel.DataAnnotations.Schema;
+    using System.Diagnostics.CodeAnalysis;
     using Newtonsoft.Json;
 
+    /// <summary>
+    /// Api Server date model
+    /// </summary>
     public class Server {
+        [Key]
         [JsonProperty("ServerId")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public string? Id { get; set; }
         [DisplayName("External Servers URL")]
         [Required(ErrorMessage = "A URL is required")]
         [MaxLength(1024)]
         [JsonProperty("ServerURL")]
+        [SuppressMessage("Compiler", "CS8618")]
         public string URL { get; set; }
 
+        /// <summary>
+        /// Checks for Equality with the specified other based on URL property.
+        /// </summary>
+        /// <param name="other">The other.</param>
+        /// <returns></returns>
         protected bool Equals(Server other) {
             return this.URL == other.URL;
         }

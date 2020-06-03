@@ -1,11 +1,13 @@
 ﻿namespace FlightControlWeb.Controllers.Interfaces {
+
+    using DataAccessLibrary.Models;
+    using Microsoft.AspNetCore.Mvc;
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using DataAccessLibrary.Models;
-    using Microsoft.AspNetCore.Mvc;
 
     public interface IFlightsController {
+
         Task<ActionResult<IEnumerable<Flight>>> GetFlights();
 
         Task<ActionResult<Flight>> GetFlight(string id);

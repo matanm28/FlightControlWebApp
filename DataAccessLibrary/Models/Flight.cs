@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace DataAccessLibrary.Models {
     using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
+    using System.Diagnostics.CodeAnalysis;
     using System.Threading.Tasks;
     using MathNet.Numerics;
     using MathNet.Numerics.Interpolation;
@@ -13,10 +14,12 @@ namespace DataAccessLibrary.Models {
         [Key]
         [Required]
         [JsonProperty("flight_id")]
+        [SuppressMessage("Compiler", "CS8618")]
         public string FlightId { get; set; }
         [JsonProperty("company_name")]
         [Required(ErrorMessage = "A Company Name is required")]
         [MaxLength(100)]
+        [SuppressMessage("Compiler", "CS8618")]
         public string CompanyName { get; set; }
 
         [Required]
@@ -36,6 +39,7 @@ namespace DataAccessLibrary.Models {
         [DefaultValue(false)]
         public bool IsExternal { get; set; }
 
+        [SuppressMessage("Compiler", "CS8618")]
         public Flight() { }
 
         public Flight(FlightPlan flightPlan, bool isExternal = false) {
@@ -64,7 +68,9 @@ namespace DataAccessLibrary.Models {
 
         public static async Task<Flight> GetFlightRelativeToTimeAsync(FlightPlan flightPlan, DateTime relativeTo) {
             if (!flightPlan.IsOngoing(relativeTo)) {
+#pragma warning disable CS8603 // Possible null reference return.
                 return null;
+#pragma warning restore CS8603 // Possible null reference return.
             }
 
             Location location = await InterpolateLocationAsync(relativeTo, flightPlan.InitialLocation, flightPlan.Segments);

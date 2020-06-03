@@ -10,38 +10,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 var objectWithoutProperties = function (obj, keys) {
   var target = {};
 
@@ -69,7 +37,6 @@ function isFunction(item) {
 function Notify(title) {
     var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-
     if (typeof title !== 'string') {
         throw new Error('Notify(): first arg (title) must be a string.');
     }
@@ -91,7 +58,6 @@ function Notify(title) {
         _options$timeout = options.timeout,
         timeout = _options$timeout === undefined ? null : _options$timeout,
         rest = objectWithoutProperties(options, ['notifyShow', 'notifyClose', 'notifyClick', 'notifyError', 'closeOnClick', 'timeout']);
-
 
     this.title = title;
     this.options = rest;

@@ -1,16 +1,17 @@
 ﻿namespace FlightControlWeb.Controllers.Implementations {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Net.Http;
-    using System.Text;
-    using System.Threading.Tasks;
+
     using Castle.Core.Internal;
     using DataAccessLibrary.DataAccess.Interfaces;
     using DataAccessLibrary.Models;
     using FlightControlWeb.Controllers.Interfaces;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Net.Http;
+    using System.Text;
+    using System.Threading.Tasks;
 
     [Route("api/[controller]")]
     [ApiController]
@@ -68,11 +69,10 @@
                             flightPlansId.Remove(id);
                             return Ok(flightPlan);
                         }
-                    }catch (HttpRequestException httpException) {
+                    } catch (HttpRequestException httpException) {
                         issue = httpException.Message;
                         await Console.Error.WriteLineAsync(issue).ConfigureAwait(false);
-                    }
-                    catch (Exception exception) {
+                    } catch (Exception exception) {
                         // todo add logger
                         issue = exception.Message;
                         await Console.Error.WriteLineAsync(issue).ConfigureAwait(false);
@@ -96,7 +96,7 @@
             await this.flightPlansService.AddAsync(flightPlan);
             await this.flightPlansService.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(this.GetFlightPlan), new { id = flightPlan.Id }, $"Flight Plan with id: '{flightPlan.Id}' added successfully.\n" 
+            return CreatedAtAction(nameof(this.GetFlightPlan), new { id = flightPlan.Id }, $"Flight Plan with id: '{flightPlan.Id}' added successfully.\n"
                                                                                            + $"Access at route: \"api/FlightPlan/{{id}}\"");
         }
 

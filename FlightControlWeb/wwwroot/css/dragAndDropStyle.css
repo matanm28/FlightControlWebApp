@@ -1,7 +1,4 @@
-﻿
-#drop-area
-
-{
+﻿#drop-area {
     border: 2px dashed #ccc;
     border-radius: 20px;
     width: 480px;
@@ -10,9 +7,9 @@
     padding: 20px;
 }
 
-#drop-area.highlight {
-    border-color: purple;
-}
+    #drop-area.highlight {
+        border-color: purple;
+    }
 
 p {
     margin-top: 0;
@@ -26,12 +23,12 @@ p {
     margin-top: 10px;
 }
 
-#gallery img {
-    width: 150px;
-    margin-bottom: 10px;
-    margin-right: 10px;
-    vertical-align: center;
-}
+    #gallery img {
+        width: 150px;
+        margin-bottom: 10px;
+        margin-right: 10px;
+        vertical-align: center;
+    }
 
 .button {
     display: inline-block;
@@ -42,9 +39,9 @@ p {
     border: 1px solid #ccc;
 }
 
-.button:hover {
-    background: #ddd;
-}
+    .button:hover {
+        background: #ddd;
+    }
 
 #fileElem {
     display: none;

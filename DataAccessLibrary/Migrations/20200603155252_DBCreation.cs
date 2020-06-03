@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace DataAccessLibrary.Migrations
 {
-    public partial class dbCreation : Migration
+    public partial class DBCreation : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -26,8 +26,7 @@ namespace DataAccessLibrary.Migrations
                 name: "Servers",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<string>(nullable: false),
                     URL = table.Column<string>(maxLength: 1024, nullable: false)
                 },
                 constraints: table =>
@@ -68,9 +67,9 @@ namespace DataAccessLibrary.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Segmentses", x => x.Id);
+                    table.PrimaryKey("PK_Segments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Segmentses_FlightPlans_FlightPlanId",
+                        name: "FK_Segments_FlightPlans_FlightPlanId",
                         column: x => x.FlightPlanId,
                         principalTable: "FlightPlans",
                         principalColumn: "Id",
@@ -83,7 +82,7 @@ namespace DataAccessLibrary.Migrations
                 column: "InitialLocationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Segmentses_FlightPlanId",
+                name: "IX_Segments_FlightPlanId",
                 table: "Segments",
                 column: "FlightPlanId");
         }
