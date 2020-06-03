@@ -34,4 +34,10 @@
     </Compile>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data\connection.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

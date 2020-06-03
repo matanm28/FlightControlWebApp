@@ -1,10 +1,12 @@
 ﻿namespace DataAccessLibrary.Models {
     using System;
     using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
     using Newtonsoft.Json;
 
     public class Segment {
         [JsonIgnore]
+        
         public int Id { get; set; }
         [Required]
         [Range(-180.000001, 180, ErrorMessage = "{0} value must be between {1} to {2}")]

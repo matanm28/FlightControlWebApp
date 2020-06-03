@@ -83,7 +83,7 @@ namespace DataAccessLibrary.Migrations
 
                     b.HasIndex("FlightPlanId");
 
-                    b.ToTable("Segmentses");
+                    b.ToTable("Segments");
                 });
 
             modelBuilder.Entity("DataAccessLibrary.Models.Server", b =>

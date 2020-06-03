@@ -56,7 +56,7 @@ namespace DataAccessLibrary.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Segmentses",
+                name: "Segments",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -74,7 +74,7 @@ namespace DataAccessLibrary.Migrations
                         column: x => x.FlightPlanId,
                         principalTable: "FlightPlans",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -84,14 +84,14 @@ namespace DataAccessLibrary.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Segmentses_FlightPlanId",
-                table: "Segmentses",
+                table: "Segments",
                 column: "FlightPlanId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Segmentses");
+                name: "Segments");
 
             migrationBuilder.DropTable(
                 name: "Servers");

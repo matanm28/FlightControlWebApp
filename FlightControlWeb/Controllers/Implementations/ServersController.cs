@@ -50,7 +50,8 @@
             await this.serverService.AddAsync(server);
             await this.serverService.SaveChangesAsync();
 
-            return this.CreatedAtAction("GetApiServer", new { id = server.Id }, server);
+            return this.CreatedAtAction("GetApiServer", new { id = server.Id }, $"Server with id: '{server.Id}' added successfully.\n"
+                                                                                + $"Access at route: \"api/Servers/{{id}}\"");
         }
 
         // DELETE: api/ApiServers/5
@@ -60,7 +61,7 @@
             var apiServer = await this.serverService.RemoveAsync(id);
             if (apiServer == null)
             {
-                return this.NotFound();
+                return this.NotFound($"A server with id:'{id}' does not exists");
             }
 
             await this.serverService.SaveChangesAsync();

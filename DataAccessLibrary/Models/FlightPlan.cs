@@ -13,7 +13,7 @@ namespace DataAccessLibrary.Models {
     public class FlightPlan {
         [Key]
         [JsonIgnore]
-        public string? Id { get; set; }
+        public string Id { get; set; }
         [Required(ErrorMessage = "Number of passengers is required")]
         public int Passengers { get; set; }
         [Required(ErrorMessage = "A Company Name is required")]
@@ -23,6 +23,7 @@ namespace DataAccessLibrary.Models {
         [Required(ErrorMessage = "A Location is required")]
         [JsonProperty("initial_location")]
         public Location InitialLocation { get; set; }
+
         public ICollection<Segment> Segments { get; set; }
 
         [JsonIgnore]

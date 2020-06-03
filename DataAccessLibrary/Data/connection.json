@@ -1,7 +1,6 @@
 {
   "ConnectionStrings": {
-    "FlightControlDB": "data source=FlightControlDB.sqlite;",
-    "FlightControlTestDB": "data source=FlightControlTestDB.sqlite;"
+    "FlightControlDB": "data source=FlightControlDB.sqlite;"
   },
   "Logging": {
     "LogLevel": {

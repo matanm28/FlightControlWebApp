@@ -30,7 +30,7 @@ namespace DataAccessLibrary.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Passengers")
-                        .HasColumnType("INTEGER");
+                     .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -81,7 +81,7 @@ namespace DataAccessLibrary.Migrations
 
                     b.HasIndex("FlightPlanId");
 
-                    b.ToTable("Segmentses");
+                    b.ToTable("Segments");
                 });
 
             modelBuilder.Entity("DataAccessLibrary.Models.Server", b =>

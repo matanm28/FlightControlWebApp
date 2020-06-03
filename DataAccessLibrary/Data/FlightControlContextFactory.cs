@@ -1,4 +1,6 @@
 ﻿namespace DataAccessLibrary.Data {
+    using System.Configuration;
+    using System.IO;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Design;
 

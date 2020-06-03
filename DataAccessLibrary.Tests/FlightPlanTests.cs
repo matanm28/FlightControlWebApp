@@ -45,7 +45,7 @@ namespace DataAccessLibrary.Tests {
             FlightPlan flightPlan = getTestFlightPlan();
             FlightPlan selfReferenceFlightPlan = flightPlan;
             FlightPlan nullFlightPlan = null;
-            object notSameObjectFlightPlan = new Flight();
+            object notSameObjectFlightPlan = new List<double>();
             object sameFlightDifferentPointerAddress = new FlightPlan()
                                                                {
                                                                        CompanyName = flightPlan.CompanyName,

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace FlightControlWeb {
+    
     public class Program {
         public static void Main(string[] args) {
             var host = Host.CreateDefaultBuilder(args).UseServiceProviderFactory(new AutofacServiceProviderFactory()).ConfigureWebHostDefaults(
@@ -17,7 +18,7 @@ namespace FlightControlWeb {
                         webHostBuilder.UseContentRoot(Directory.GetCurrentDirectory()).UseIISIntegration().UseStartup<Startup>();
                     }).Build();
             TypeDescriptor.AddAttributes(typeof(DateTime), new TypeConverterAttribute(typeof(UtcDateTimeConverter)));
-            CreateDbIfNotExists(host);
+            createDbIfNotExistsAsync(host);
 
             host.Run();
         }
@@ -28,14 +29,15 @@ namespace FlightControlWeb {
                             webBuilder.UseStartup<Startup>();
                         });
 
-        private static void CreateDbIfNotExists(IHost host) {
+        private static void createDbIfNotExistsAsync(IHost host) {
             using (var scope = host.Services.CreateScope()) {
                 var services = scope.ServiceProvider;
 
                 try {
                     var context = services.GetRequiredService<DbContext>();
-                    context.Database.EnsureCreated();
-                    //context.Database.Migrate();
+                   context.Database.Migrate();
+                   context.Database.EnsureCreated();
+                    
                 }
                 catch (Exception ex) {
                     var logger = services.GetRequiredService<ILogger<Program>>();

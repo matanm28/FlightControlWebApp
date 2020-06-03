@@ -83,6 +83,8 @@
             if (flightPlan == null) {
                 return null;
             }
+            this.dbContext.Locations.Remove(flightPlan.InitialLocation);
+            this.dbContext.Segmentses.RemoveRange(flightPlan.Segments);
             this.dbContext.FlightPlans.Remove(flightPlan);
             return flightPlan;
         }

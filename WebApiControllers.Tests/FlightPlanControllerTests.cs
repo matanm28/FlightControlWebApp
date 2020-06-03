@@ -29,7 +29,6 @@ namespace WebApiControllers.Tests {
                 
                 mock.Mock<IFlightPlansService>().Verify(x=>x.GetAllAsync(),Times.Once);
                 Assert.NotNull(actual);
-                Assert.IsType(typeof(ActionResult<IEnumerable<FlightPlan>>), actual);
                 Assert.NotNull(actual.Value);
                 Assert.Equal(expected.Count,actual.Value.ToList().Count);
                 var actualList = actual.Value.ToList();
@@ -72,8 +71,6 @@ namespace WebApiControllers.Tests {
             using (var mock = AutoMock.GetLoose()) {
                 var cls = mock.Create<FlightsController>();
                 var expected = await cls.GetFlightsRelativeTo(dateTime);
-                var result = expected.Result as BadRequestResult;
-                Assert.IsType(typeof(ActionResult<IEnumerable<Flight>>), expected);
                 mock.Mock<IFlightPlansService>().Verify(x=>x.GetAllAsync(),Times.Never);
             }
             

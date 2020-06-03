@@ -53,7 +53,7 @@
                 return false;
             }
 
-            return (await this.dbContext.Servers.AnyAsync(server => server.URL == element.URL)) != null;
+            return await this.dbContext.Servers.AnyAsync(server => server.URL == element.URL);
         }
 
         /// <inheritdoc />
@@ -66,7 +66,6 @@
             if (element != null) {
                 Server server = this.dbContext.Servers.Remove(element).Entity;
                 if (server.Equals(element)) {
-                    await this.SaveChangesAsync();
                     return server;
                 }
             }
@@ -79,7 +78,6 @@
             if (server == null) {
                 return null;
             }
-
             this.dbContext.Remove(server);
             return server;
         }
